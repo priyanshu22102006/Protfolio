@@ -56,7 +56,7 @@ canvas{display:block}
 .cursor-ring.active{opacity:0.6;width:56px;height:56px}
 
 /* ===== THEME TOGGLE ===== */
-#theme-toggle{position:fixed;top:24px;right:24px;z-index:1000;width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--text);transition:transform var(--transition)}
+#theme-toggle{position:relative;z-index:1000;width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--text);transition:transform var(--transition)}
 #theme-toggle:hover{transform:scale(1.1)}
 #theme-wipe{position:fixed;inset:0;z-index:9990;border-radius:50%;background:var(--bg);pointer-events:none;clip-path:circle(0% at 50% 50%);transition:none}
 
@@ -231,7 +231,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:900;padding:20px 40px;display:fl
 /* ===== PROJECTS ===== */
 .projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:28px;max-width:1200px;margin:0 auto}
 .project-card{position:relative;overflow:hidden;cursor:pointer}
-.project-card .glass-card{height:100%;display:flex;flex-direction:column}Settings - Account
+.project-card .glass-card{height:100%;display:flex;flex-direction:column}
 
 .project-img{height:200px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:16px;background:var(--bg-alt);position:relative}
 .project-img canvas{width:100%;height:100%}
@@ -315,7 +315,7 @@ footer .footer-heart{color:var(--accent)}
   .cert-card.in-view{opacity:1}
   .cert-frame{transform:none!important}
   .cert-inner{transform:none!important}
-  #theme-toggle{top:16px;right:16px}
+  #theme-toggle{position:fixed;top:16px;right:60px}
   /* Hide 3D canvases on mobile */
   .desktop-only-canvas{display:none!important}
   .mobile-fallback{display:block}
@@ -358,22 +358,22 @@ footer .footer-heart{color:var(--accent)}
 <!-- ===== NAVIGATION ===== -->
 <nav id="main-nav">
   <a href="#hero" class="nav-logo" id="nav-logo">Portfolio</a>
-  <ul class="nav-links" id="nav-links">
-    <li><a href="#about">About</a></li>
-    <li><a href="#education">Education</a></li>
-    <li><a href="#certificates">Certificates</a></li>
-    <li><a href="#hackathons">Hackathons</a></li>
-    <li><a href="#projects">Projects</a></li>
-    <li><a href="#skills">Skills</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
+  <div class="nav-right" style="display:flex;align-items:center;gap:28px">
+    <ul class="nav-links" id="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#education">Education</a></li>
+      <li><a href="#certificates">Certificates</a></li>
+      <li><a href="#hackathons">Hackathons</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+  </div>
   <div class="nav-hamburger" id="hamburger" onclick="document.getElementById('nav-links').classList.toggle('open')">
     <span></span><span></span><span></span>
   </div>
 </nav>
-
-<!-- ===== THEME TOGGLE ===== -->
-<button id="theme-toggle" aria-label="Toggle theme">🌙</button>
 
 <!-- ===== HERO SECTION ===== -->
 <section class="section" id="hero">
@@ -563,9 +563,9 @@ const PORTFOLIO = {
     { number: "3+", label: "Certificates" }
   ],
   education: [
-    { year: "2024 – Present", title: "B.Tech Computer Science", institution: "Your University", desc: "Pursuing Computer Science with focus on AI/ML and Web Technologies" },
-    { year: "2022 – 2024", title: "Higher Secondary (XII)", institution: "Your School", desc: "Science stream with Mathematics and Computer Science" },
-    { year: "2020 – 2022", title: "Secondary (X)", institution: "Your School", desc: "Foundation in sciences and mathematics" }
+    { year: "2024 – Present", title: "B.Tech Computer Science", institution: "Technical University", desc: "Pursuing Computer Science with focus on AI/ML and Web Technologies" },
+    { year: "2022 – 2024", title: "Higher Secondary (XII)", institution: "Model School", desc: "Science stream with Mathematics and Computer Science" },
+    { year: "2020 – 2022", title: "Secondary (X)", institution: "Model School", desc: "Foundation in sciences and mathematics" }
   ],
   certificates: [
     { name: "Full Stack Web Development", issuer: "Udemy", date: "2024", desc: "Comprehensive course covering React, Node.js, MongoDB and deployment" },
@@ -579,10 +579,10 @@ const PORTFOLIO = {
     { name: "InnovateFest 2023", place: "3rd", placeClass: "bronze", desc: "Built a mental health chatbot with NLP" }
   ],
   projects: [
-    { title: "AI Code Assistant", desc: "An intelligent coding companion that helps developers write better code with real-time suggestions and error detection.", tags: ["Python", "GPT-4", "React", "WebSocket"], link: "#", color: "#6c63ff" },
-    { title: "EcoTrack Dashboard", desc: "Real-time environmental monitoring dashboard with interactive data visualization and predictive analytics.", tags: ["Next.js", "D3.js", "IoT", "PostgreSQL"], link: "#", color: "#2dd4bf" },
-    { title: "SoundScape", desc: "Generative music platform that creates ambient soundscapes based on user mood and environment data.", tags: ["Web Audio API", "Three.js", "TensorFlow"], link: "#", color: "#f59e0b" },
-    { title: "CryptoVault", desc: "Secure cryptocurrency portfolio tracker with real-time market data and predictive price analysis.", tags: ["React", "Node.js", "Blockchain", "Chart.js"], link: "#", color: "#ec4899" }
+    { title: "AI Code Assistant", desc: "An intelligent coding companion that helps developers write better code with real-time suggestions and error detection.", tags: ["Python", "GPT-4", "React", "WebSocket"], link: "https://github.com/priyanshu22102006/AI-Code-Assistant", color: "#6c63ff" },
+    { title: "EcoTrack Dashboard", desc: "Real-time environmental monitoring dashboard with interactive data visualization and predictive analytics.", tags: ["Next.js", "D3.js", "IoT", "PostgreSQL"], link: "https://github.com/priyanshu22102006/EcoTrack", color: "#2dd4bf" },
+    { title: "SoundScape", desc: "Generative music platform that creates ambient soundscapes based on user mood and environment data.", tags: ["Web Audio API", "Three.js", "TensorFlow"], link: "https://github.com/priyanshu22102006/SoundScape", color: "#f59e0b" },
+    { title: "CryptoVault", desc: "Secure cryptocurrency portfolio tracker with real-time market data and predictive price analysis.", tags: ["React", "Node.js", "Blockchain", "Chart.js"], link: "https://github.com/priyanshu22102006/CryptoVault", color: "#ec4899" }
   ],
   skills: [
     { name: "JavaScript", level: 90, color: "#f59e0b" },
@@ -597,12 +597,12 @@ const PORTFOLIO = {
     { name: "Figma", level: 68, color: "#a259ff" }
   ],
   socialLinks: [
-    { name: "GitHub", url: "https://github.com", icon: "⌨️" },
-    { name: "LinkedIn", url: "https://linkedin.com", icon: "💼" },
-    { name: "Twitter", url: "https://twitter.com", icon: "🐦" },
-    { name: "Email", url: "mailto:hello@example.com", icon: "✉️" }
+    { name: "GitHub", url: "https://github.com/priyanshu22102006", icon: "⌨️" },
+    { name: "LinkedIn", url: "https://linkedin.com/in/priyanshu22102006", icon: "💼" },
+    { name: "Twitter", url: "https://twitter.com/priyanshu22102006", icon: "🐦" },
+    { name: "Email", url: "mailto:priyanshu@example.com", icon: "✉️" }
   ],
-  resumeUrl: "#",
+  resumeUrl: "https://example.com/resume.pdf",
   footerText: "Designed & Built with <span class='footer-heart'>♥</span> by"
 };
 
@@ -705,7 +705,10 @@ function populateContent() {
     projEl.innerHTML += `
       <div class="project-card tilt-card fade-up" data-index="${i}">
         <div class="glass-card">
-          <div class="project-img"><div class="fallback-gradient" style="background:linear-gradient(135deg,${p.color},${p.color}88)"></div></div>
+          <div class="project-img" id="project-img-${i}">
+            <canvas id="project-canvas-${i}" class="desktop-only-canvas"></canvas>
+            <div class="fallback-gradient" style="background:linear-gradient(135deg,${p.color},${p.color}88); opacity:1"></div>
+          </div>
           <h3 class="project-title">${p.title}</h3>
           <p class="project-desc">${p.desc}</p>
           <div class="project-tags">${p.tags.map(t => `<span class="project-tag">${t}</span>`).join('')}</div>
@@ -741,6 +744,13 @@ function populateContent() {
       mobileImg.parentElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));font-size:3rem;font-weight:800;color:#fff;font-family:var(--font-display)">${(PORTFOLIO.firstName || 'P')[0]}</div>`;
     };
   }
+
+  // Mobile nav click handlers to close drawer on navigation
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+      document.getElementById('nav-links').classList.remove('open');
+    });
+  });
 }
 
 /* ===========================================================
@@ -1458,7 +1468,6 @@ function initAboutSection() {
   `;
 
   // Load photo texture
-  const textureLoader = new THREE.TextureLoader();
   const uniforms = {
     uTexture: { value: null },
     uTime: { value: 0 },
@@ -1466,33 +1475,40 @@ function initAboutSection() {
     uHasTexture: { value: 0 }
   };
 
-  textureLoader.load(MY_PHOTO,
-    tex => {
-      uniforms.uTexture.value = tex;
-      uniforms.uHasTexture.value = 1;
-    },
-    undefined,
-    () => {
-      // Fallback: create initials texture
-      const fallbackCanvas = document.createElement('canvas');
-      fallbackCanvas.width = 512;
-      fallbackCanvas.height = 512;
-      const ctx = fallbackCanvas.getContext('2d');
-      const grad = ctx.createLinearGradient(0, 0, 512, 512);
-      grad.addColorStop(0, '#6c63ff');
-      grad.addColorStop(1, '#2dd4bf');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 180px Syne, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText((PORTFOLIO.firstName || 'P')[0], 256, 256);
-      const fallbackTex = new THREE.CanvasTexture(fallbackCanvas);
-      uniforms.uTexture.value = fallbackTex;
-      uniforms.uHasTexture.value = 1;
-    }
-  );
+  function createInitialsTexture() {
+    const fallbackCanvas = document.createElement('canvas');
+    fallbackCanvas.width = 512;
+    fallbackCanvas.height = 512;
+    const ctx = fallbackCanvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 512, 512);
+    grad.addColorStop(0, '#6c63ff');
+    grad.addColorStop(1, '#2dd4bf');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 512, 512);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 180px Syne, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText((PORTFOLIO.firstName || 'P')[0], 256, 256);
+    const fallbackTex = new THREE.CanvasTexture(fallbackCanvas);
+    uniforms.uTexture.value = fallbackTex;
+    uniforms.uHasTexture.value = 1;
+  }
+
+  if (window.location.protocol === 'file:') {
+    // Avoid CORS error/warning on local file:// protocol
+    createInitialsTexture();
+  } else {
+    const textureLoader = new THREE.TextureLoader();
+    textureLoader.load(MY_PHOTO,
+      tex => {
+        uniforms.uTexture.value = tex;
+        uniforms.uHasTexture.value = 1;
+      },
+      undefined,
+      createInitialsTexture
+    );
+  }
 
   const photoMat = new THREE.ShaderMaterial({
     vertexShader: holoVertexShader,
@@ -2198,116 +2214,175 @@ function initContactWormhole() {
 /* ===========================================================
    PROJECTS — 3D FLOATING SCREEN MOCKUP (Featured)
    =========================================================== */
-function initProjectScreen() {
+function initProjectScreens() {
   if (isMobile) return;
-  const projectCards = document.querySelectorAll('.project-card');
-  if (projectCards.length === 0) return;
+  PORTFOLIO.projects.forEach((p, i) => {
+    const imgContainer = document.getElementById(`project-img-${i}`);
+    if (!imgContainer) return;
 
-  // Only do 3D screen for first project card
-  const firstCard = projectCards[0];
-  const imgContainer = firstCard.querySelector('.project-img');
-  if (!imgContainer) return;
+    const pcCanvas = document.getElementById(`project-canvas-${i}`);
+    if (!pcCanvas) return;
 
-  const pcCanvas = document.createElement('canvas');
-  pcCanvas.className = 'desktop-only-canvas';
-  pcCanvas.style.width = '100%';
-  pcCanvas.style.height = '100%';
-  imgContainer.innerHTML = '';
-  imgContainer.appendChild(pcCanvas);
+    const renderer = createRenderer(pcCanvas);
+    if (!renderer) return;
 
-  const renderer = createRenderer(pcCanvas);
-  if (!renderer) return;
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 50);
-  camera.position.z = 3.5;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 50);
+    camera.position.z = 3.5;
 
-  const ambLight = new THREE.AmbientLight(0x444466, 0.6);
-  scene.add(ambLight);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
-  dirLight.position.set(2, 2, 4);
-  scene.add(dirLight);
+    const ambLight = new THREE.AmbientLight(0x444466, 0.6);
+    scene.add(ambLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    dirLight.position.set(2, 2, 4);
+    scene.add(dirLight);
 
-  const monitorGroup = new THREE.Group();
+    const group = new THREE.Group();
+    scene.add(group);
 
-  // Screen frame
-  const frameMat = new THREE.MeshPhongMaterial({ color: 0x1a1a2e, shininess: 60 });
+    let mesh;
+    const mat = new THREE.MeshPhongMaterial({
+      color: p.color,
+      emissive: p.color,
+      emissiveIntensity: 0.2,
+      shininess: 80
+    });
 
-  // Back panel
-  const backGeo = new THREE.BoxGeometry(2.2, 1.5, 0.08);
-  const backMesh = new THREE.Mesh(backGeo, frameMat);
-  monitorGroup.add(backMesh);
+    if (i === 0) {
+      // AI Code Assistant: Holographic monitor/screen
+      const frameMat = new THREE.MeshPhongMaterial({ color: 0x1a1a2e, shininess: 60 });
+      const backGeo = new THREE.BoxGeometry(2.2, 1.5, 0.08);
+      const backMesh = new THREE.Mesh(backGeo, frameMat);
+      group.add(backMesh);
 
-  // Screen face
-  const screenGeo = new THREE.PlaneGeometry(2, 1.3);
-  const screenCanvas = document.createElement('canvas');
-  screenCanvas.width = 512;
-  screenCanvas.height = 320;
-  const sCtx = screenCanvas.getContext('2d');
-  const sGrad = sCtx.createLinearGradient(0, 0, 512, 320);
-  sGrad.addColorStop(0, PORTFOLIO.projects[0].color);
-  sGrad.addColorStop(1, '#1a1a3e');
-  sCtx.fillStyle = sGrad;
-  sCtx.fillRect(0, 0, 512, 320);
-  sCtx.fillStyle = '#fff';
-  sCtx.font = 'bold 28px sans-serif';
-  sCtx.textAlign = 'center';
-  sCtx.fillText(PORTFOLIO.projects[0].title, 256, 160);
-  sCtx.font = '16px sans-serif';
-  sCtx.fillStyle = 'rgba(255,255,255,0.7)';
-  sCtx.fillText('Click to view project', 256, 200);
+      const screenGeo = new THREE.PlaneGeometry(2, 1.3);
+      const screenCanvas = document.createElement('canvas');
+      screenCanvas.width = 512; screenCanvas.height = 320;
+      const sCtx = screenCanvas.getContext('2d');
+      const sGrad = sCtx.createLinearGradient(0, 0, 512, 320);
+      sGrad.addColorStop(0, p.color); sGrad.addColorStop(1, '#1a1a3e');
+      sCtx.fillStyle = sGrad; sCtx.fillRect(0, 0, 512, 320);
+      sCtx.fillStyle = '#fff'; sCtx.font = 'bold 28px sans-serif'; sCtx.textAlign = 'center';
+      sCtx.fillText(p.title, 256, 160);
+      sCtx.font = '16px sans-serif'; sCtx.fillStyle = 'rgba(255,255,255,0.7)';
+      sCtx.fillText('Click to view project', 256, 200);
 
-  const screenTex = new THREE.CanvasTexture(screenCanvas);
-  const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
-  const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-  screenMesh.position.z = 0.05;
-  monitorGroup.add(screenMesh);
+      const screenTex = new THREE.CanvasTexture(screenCanvas);
+      const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
+      const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+      screenMesh.position.z = 0.05;
+      group.add(screenMesh);
 
-  // Stand
-  const standGeo = new THREE.BoxGeometry(0.15, 0.6, 0.1);
-  const standMesh = new THREE.Mesh(standGeo, frameMat);
-  standMesh.position.y = -1.05;
-  monitorGroup.add(standMesh);
+      const standGeo = new THREE.BoxGeometry(0.15, 0.6, 0.1);
+      const standMesh = new THREE.Mesh(standGeo, frameMat);
+      standMesh.position.y = -1.05; group.add(standMesh);
 
-  // Base
-  const baseGeo = new THREE.BoxGeometry(0.8, 0.06, 0.4);
-  const baseMesh = new THREE.Mesh(baseGeo, frameMat);
-  baseMesh.position.y = -1.35;
-  monitorGroup.add(baseMesh);
+      const baseGeo = new THREE.BoxGeometry(0.8, 0.06, 0.4);
+      const baseMesh = new THREE.Mesh(baseGeo, frameMat);
+      baseMesh.position.y = -1.35; group.add(baseMesh);
 
-  monitorGroup.position.y = 0.3;
-  scene.add(monitorGroup);
+      group.position.y = 0.3;
+    } else if (i === 1) {
+      // EcoTrack Dashboard: 3D Grid Globe
+      const geo = new THREE.IcosahedronGeometry(0.9, 2);
+      const wireMat = new THREE.MeshBasicMaterial({ color: p.color, wireframe: true, transparent: true, opacity: 0.45 });
+      const solidMat = new THREE.MeshPhongMaterial({ color: p.color, transparent: true, opacity: 0.15, shininess: 30 });
+      mesh = new THREE.Group();
+      mesh.add(new THREE.Mesh(geo, solidMat));
+      mesh.add(new THREE.Mesh(geo, wireMat));
+      
+      const satOrbitGeo = new THREE.TorusGeometry(1.2, 0.008, 8, 64);
+      const satOrbitMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.2 });
+      const satOrbit = new THREE.Mesh(satOrbitGeo, satOrbitMat);
+      satOrbit.rotation.x = Math.PI / 3;
+      mesh.add(satOrbit);
 
-  // Click handler
-  pcCanvas.style.cursor = 'pointer';
-  pcCanvas.addEventListener('click', () => {
-    if (PORTFOLIO.projects[0].link && PORTFOLIO.projects[0].link !== '#') {
-      window.open(PORTFOLIO.projects[0].link, '_blank');
+      const satGeo = new THREE.SphereGeometry(0.06, 8, 8);
+      const satMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const sat = new THREE.Mesh(satGeo, satMat);
+      sat.position.x = 1.2;
+      satOrbit.add(sat);
+
+      group.add(mesh);
+    } else if (i === 2) {
+      // SoundScape: 3D Parametric Wave plane
+      const geo = new THREE.PlaneGeometry(2.0, 1.2, 14, 14);
+      const waveMat = new THREE.MeshPhongMaterial({
+        color: p.color,
+        emissive: p.color,
+        emissiveIntensity: 0.2,
+        shininess: 80,
+        wireframe: true
+      });
+      mesh = new THREE.Mesh(geo, waveMat);
+      mesh.rotation.x = -Math.PI / 3;
+      group.add(mesh);
+    } else if (i === 3) {
+      // CryptoVault: 3D Cylinder Coin
+      const geo = new THREE.CylinderGeometry(0.7, 0.7, 0.1, 32);
+      mesh = new THREE.Mesh(geo, mat);
+      mesh.rotation.x = Math.PI / 2;
+      group.add(mesh);
     }
+
+    // Click handler for all canvases
+    pcCanvas.style.cursor = 'pointer';
+    pcCanvas.addEventListener('click', () => {
+      if (p.link && p.link !== '#') {
+        window.open(p.link, '_blank');
+      }
+    });
+
+    function resize() {
+      const w = imgContainer.clientWidth;
+      const h = imgContainer.clientHeight;
+      if (w && h) {
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      }
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let time = 0;
+    const loop = () => {
+      time += 0.016;
+      if (i === 0) {
+        group.position.y = 0.3 + Math.sin(time * 1.5) * 0.05;
+        group.rotation.y = Math.sin(time * 0.8) * 0.1 + mouse.nx * 0.15;
+        group.rotation.x = mouse.ny * 0.08;
+      } else if (i === 1) {
+        mesh.rotation.y = time * 0.4;
+        mesh.rotation.x = time * 0.15;
+        mesh.children[2].rotation.z = time * 1.2;
+        group.position.y = Math.sin(time * 1.5) * 0.05;
+        group.rotation.y = mouse.nx * 0.2;
+        group.rotation.x = mouse.ny * 0.2;
+      } else if (i === 2) {
+        const pos = mesh.geometry.attributes.position;
+        for (let idx = 0; idx < pos.count; idx++) {
+          const x = pos.getX(idx);
+          const y = pos.getY(idx);
+          const z = Math.sin(x * 3.0 + time * 3.0) * 0.12 + Math.cos(y * 2.0 + time * 2.0) * 0.08;
+          pos.setZ(idx, z);
+        }
+        pos.needsUpdate = true;
+        mesh.rotation.z = time * 0.15;
+        group.position.y = Math.sin(time * 1.5) * 0.05;
+        group.rotation.y = mouse.nx * 0.2;
+        group.rotation.x = -Math.PI / 3.5 + mouse.ny * 0.2;
+      } else if (i === 3) {
+        mesh.rotation.y = time * 0.5;
+        mesh.rotation.x = Math.PI / 2 + Math.sin(time * 0.8) * 0.2 + mouse.ny * 0.2;
+        mesh.rotation.z = time * 0.25 + mouse.nx * 0.2;
+        group.position.y = Math.sin(time * 1.5) * 0.05;
+      }
+      renderer.render(scene, camera);
+    };
+    renderer.setAnimationLoop(loop);
+
+    activeScenes[`projectScreen-${i}`] = { renderer, scene, camera, loop };
   });
-
-  function resize() {
-    const w = imgContainer.clientWidth;
-    const h = imgContainer.clientHeight;
-    if (w && h) {
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    }
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  let time = 0;
-  const loop = () => {
-    time += 0.016;
-    monitorGroup.position.y = 0.3 + Math.sin(time * 1.5) * 0.05;
-    monitorGroup.rotation.y = Math.sin(time * 0.8) * 0.1 + mouse.nx * 0.15;
-    monitorGroup.rotation.x = mouse.ny * 0.08;
-    renderer.render(scene, camera);
-  };
-  renderer.setAnimationLoop(loop);
-
-  activeScenes.projectScreen = { renderer, scene, camera, loop };
 }
 
 /* ===========================================================
@@ -2493,7 +2568,7 @@ function initCanvasLifecycle() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const id = entry.target.id;
-      const sceneKeys = id === 'projects' ? ['projectScreen'] : [id];
+      const sceneKeys = id === 'projects' ? ['projectScreen-0', 'projectScreen-1', 'projectScreen-2', 'projectScreen-3'] : [id];
       
       sceneKeys.forEach(key => {
         const scene = activeScenes[key];
@@ -2534,7 +2609,7 @@ function init() {
     initEducationDNA();
     initCertificatesCarousel();
     initHackathonTrophies();
-    initProjectScreen();
+    initProjectScreens();
     initSkillsPlanets();
     initContactWormhole();
     initCanvasLifecycle();
