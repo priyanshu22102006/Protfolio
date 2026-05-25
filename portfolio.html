@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Portfolio — Creative Developer</title>
+<meta name="description" content="Immersive 3D portfolio showcasing creative development, projects, and skills with stunning interactive experiences.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS RESET & VARIABLES ===== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060816;--bg-alt:#0a0f2a;--surface:rgba(0,210,255,0.04);
+  --border:rgba(0,210,255,0.15);--text:#d0e8ff;--text-muted:#7090b0;
+  --accent:#00d2ff;--accent2:#7b2fff;--accent3:#ff6b35;
+  --circuit:#00d2ff;--neon-green:#39ff14;--neon-pink:#ff00ff;
+  --glass-blur:20px;--glass-sat:200%;
+  --font-display:'Syne',sans-serif;--font-body:'DM Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  --radius:12px;--radius-sm:6px;--transition:0.3s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"]{
+  --bg:#e8f0f8;--bg-alt:#d0dcea;--surface:rgba(0,0,0,0.04);
+  --border:rgba(0,0,0,0.1);--text:#1a1a2e;--text-muted:#3a5a7a;
+}
+html{scroll-behavior:smooth;font-size:16px;overflow-x:hidden}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);overflow-x:hidden;transition:background 0.6s,color 0.6s;line-height:1.7}
+
+/* ===== ANIMATED TECH BACKGROUND ===== */
+#tech-bg-canvas{position:fixed;inset:0;z-index:-1;width:100%;height:100%;pointer-events:none}
+
+/* ===== CIRCUIT CARD STYLE ===== */
+.circuit-card{background:rgba(0,20,50,0.7);backdrop-filter:blur(16px);border:1px solid var(--circuit);border-radius:var(--radius);padding:28px;position:relative;overflow:hidden;transition:transform 0.3s,box-shadow 0.3s;box-shadow:0 0 20px rgba(0,210,255,0.05)}
+.circuit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--circuit),transparent);animation:circuit-scan 3s linear infinite}
+.circuit-card::after{content:'';position:absolute;top:4px;right:4px;width:8px;height:8px;border-top:2px solid var(--circuit);border-right:2px solid var(--circuit)}
+.circuit-card:hover{transform:translateY(-4px);box-shadow:0 0 40px rgba(0,210,255,0.2),0 8px 32px rgba(0,0,0,0.4)}
+@keyframes circuit-scan{0%{transform:translateX(-100%)} 100%{transform:translateX(100%)}}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-display);font-weight:700;line-height:1.2}
+a{color:var(--accent);text-decoration:none;transition:color var(--transition)}
+a:hover{color:var(--accent2)}
+img{max-width:100%;display:block}
+canvas{display:block}
+
+/* ===== LOADING SCREEN ===== */
+#loader{position:fixed;inset:0;z-index:10000;background:#050510;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
+#loader .letter{display:inline-block;font-family:var(--font-display);font-size:clamp(2.5rem,8vw,5rem);font-weight:800;color:#fff;opacity:0;transform:translateY(-80px)}
+#loader .scan-line{position:absolute;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);top:0;opacity:0}
+#loader .curtain-left,#loader .curtain-right{position:absolute;top:0;bottom:0;width:50%;background:#050510;z-index:2}
+#loader .curtain-left{left:0}
+#loader .curtain-right{right:0}
+
+/* ===== CURSOR TRAIL ===== */
+.cursor-dot{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;background:var(--accent);transition:width 0.3s,height 0.3s,opacity 0.1s}
+.cursor-ring{position:fixed;pointer-events:none;z-index:9998;width:40px;height:40px;border:2px solid var(--accent);border-radius:50%;transform:translate(-50%,-50%);transition:width 0.3s,height 0.3s,opacity 0.3s,border-color 0.3s;opacity:0}
+.cursor-ring.active{opacity:0.6;width:56px;height:56px}
+
+/* ===== THEME TOGGLE ===== */
+#theme-toggle{position:fixed;top:24px;right:24px;z-index:1000;width:48px;height:48px;border-radius:50%;border:1px solid var(--border);background:var(--surface);backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--text);transition:transform var(--transition)}
+#theme-toggle:hover{transform:scale(1.1)}
+#theme-wipe{position:fixed;inset:0;z-index:9990;border-radius:50%;background:var(--bg);pointer-events:none;clip-path:circle(0% at 50% 50%);transition:none}
+
+/* ===== NAV ===== */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(16px) saturate(180%);background:rgba(5,5,16,0.6);border-bottom:1px solid var(--border);transition:background 0.3s}
+[data-theme="light"] nav{background:rgba(250,250,248,0.7)}
+.nav-logo{font-family:var(--font-display);font-weight:800;font-size:1.4rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{color:var(--text-muted);font-size:0.9rem;font-weight:500;letter-spacing:0.02em;position:relative;padding:4px 0}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--accent);transition:width var(--transition)}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{width:100%}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1001}
+.nav-hamburger span{display:block;width:24px;height:2px;background:var(--text);transition:var(--transition)}
+
+/* ===== SECTION BASE ===== */
+.section{position:relative;min-height:100vh;padding:120px 5vw 80px;overflow:hidden}
+.section-header{text-align:center;margin-bottom:60px}
+.section-header h2{font-size:clamp(2rem,5vw,3.2rem);margin-bottom:12px;position:relative;display:inline-block}
+.section-header h2 .text-reveal{display:inline-block;clip-path:inset(0 100% 0 0);transition:clip-path 0.8s cubic-bezier(.77,0,.175,1)}
+.section-header h2.revealed .text-reveal{clip-path:inset(0 0 0 0)}
+.section-header p{color:var(--text-muted);font-size:1.05rem;max-width:560px;margin:0 auto}
+.section-label{font-family:var(--font-mono);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--accent);margin-bottom:8px;display:block}
+
+/* ===== GLASS CARD ===== */
+.glass-card{background:rgba(0,15,40,0.6);backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-sat));border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:transform var(--transition),box-shadow var(--transition)}
+.glass-card:hover{transform:translateY(-4px);box-shadow:0 0 30px rgba(0,210,255,0.15),0 8px 32px rgba(0,0,0,0.5)}
+
+/* ===== HERO ===== */
+#hero{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;padding-top:80px}
+#hero-canvas{position:absolute;inset:0;z-index:1}
+.hero-content{position:relative;z-index:2;text-align:center;max-width:800px}
+.hero-greeting{font-family:var(--font-mono);font-size:0.9rem;color:var(--accent);margin-bottom:16px;opacity:0}
+.hero-name{font-size:clamp(3rem,8vw,5.5rem);font-weight:800;line-height:1.05;margin-bottom:20px;opacity:0}
+.hero-name .gradient-text{background:linear-gradient(135deg,var(--accent),var(--accent2),var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-tagline{font-size:clamp(1rem,2.5vw,1.3rem);color:var(--text-muted);margin-bottom:36px;opacity:0}
+.hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0}
+.shape-label{position:absolute;bottom:60px;left:50%;transform:translateX(-50%);z-index:2;font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.2em;opacity:0;transition:opacity 0.5s}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:50px;font-family:var(--font-body);font-weight:600;font-size:0.95rem;cursor:pointer;border:none;position:relative;overflow:hidden;transition:transform var(--transition),box-shadow var(--transition)}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#8b7dff);color:#fff;box-shadow:0 8px 32px rgba(108,99,255,0.3)}
+.btn-primary:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 12px 40px rgba(108,99,255,0.45);color:#fff}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.btn .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.3);transform:scale(0);animation:ripple-anim 0.6s ease-out}
+@keyframes ripple-anim{to{transform:scale(4);opacity:0}}
+
+/* ===== ABOUT ===== */
+#about{display:flex;align-items:center;gap:60px;flex-wrap:wrap;justify-content:center}
+#about-canvas-wrapper{position:relative;width:380px;height:450px;flex-shrink:0}
+#about-canvas{width:100%;height:100%}
+.about-text{max-width:520px}
+.about-text h2{font-size:2.4rem;margin-bottom:20px}
+.about-text p{color:var(--text-muted);margin-bottom:16px}
+.about-stats{display:flex;gap:32px;margin-top:28px}
+.stat-item{text-align:center}
+.stat-number{font-family:var(--font-display);font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:0.8rem;color:var(--text-muted);margin-top:4px}
+
+/* ===== EDUCATION ===== */
+.edu-timeline{display:flex;flex-direction:column;gap:20px;max-width:700px;margin:0 auto;position:relative;z-index:2;pointer-events:none}
+.edu-timeline::before{content:'';position:absolute;left:18px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--circuit),var(--accent2));box-shadow:0 0 8px var(--circuit);opacity:0.6}
+.edu-card{display:flex;gap:20px;align-items:flex-start;padding-left:46px;position:relative;pointer-events:auto}
+.edu-card::before{content:'';position:absolute;left:10px;top:12px;width:18px;height:18px;border-radius:2px;background:var(--bg);border:2px solid var(--circuit);box-shadow:0 0 12px var(--circuit);z-index:1;transform:rotate(45deg)}
+.edu-card .glass-card{flex:1}
+.edu-year{font-family:var(--font-mono);font-size:0.75rem;color:var(--circuit);letter-spacing:0.08em}
+.edu-title{font-size:1.1rem;margin:4px 0 3px;color:var(--text)}
+.edu-inst{font-size:0.85rem;color:var(--accent2);font-weight:600;margin-bottom:4px}
+.edu-desc{font-size:0.85rem;color:var(--text-muted)}
+#edu-canvas{position:sticky;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;opacity:0.35}
+
+/* ===== CERTIFICATES — HORIZONTAL SCROLL ===== */
+.cert-h-viewport {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+}
+.cert-h-panel {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6vw;
+  padding: 0 5vw;
+  visibility: hidden; /* JS will manage visibility */
+}
+.cert-h-visual {
+  flex: 0 0 auto;
+  width: 440px;
+  height: 320px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(0,210,255,0.15), rgba(123,47,255,0.1));
+  border: 1px solid rgba(0,210,255,0.3);
+  box-shadow: 0 0 50px rgba(0,210,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  position: relative;
+  will-change: transform, opacity;
+}
+.cert-h-visual-inner {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(0,210,255,0.2);
+  border-radius: calc(var(--radius) - 4px);
+  background: rgba(0,10,30,0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.cert-h-details {
+  flex: 1;
+  max-width: 500px;
+  will-change: transform, opacity;
+}
+.cert-h-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  color: var(--text);
+  font-weight: 700;
+  margin-bottom: 15px;
+  line-height: 1.2;
+}
+.cert-h-issuer {
+  font-family: var(--font-mono);
+  color: var(--circuit);
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+.cert-h-date {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+.cert-h-desc {
+  color: var(--text-muted);
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+@media (max-width: 768px) {
+  .cert-h-panel {
+    flex-direction: column;
+    gap: 30px;
+  }
+  .cert-h-visual {
+    width: 90vw;
+    height: 220px;
+  }
+}
+
+/* ===== HACKATHONS ===== */
+.hack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1100px;margin:0 auto;position:relative;z-index:2;pointer-events:none;padding:0 5vw}
+.hack-card{position:relative;pointer-events:auto}
+.hack-card .glass-card{height:100%;border-color:rgba(0,210,255,0.2)}
+.hack-place{font-family:var(--font-mono);font-size:1.8rem;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.hack-place.gold{color:#f59e0b;text-shadow:0 0 20px rgba(245,158,11,0.5)}
+.hack-place.silver{color:#94a3b8;text-shadow:0 0 20px rgba(148,163,184,0.4)}
+.hack-place.bronze{color:#cd7f32;text-shadow:0 0 20px rgba(205,127,50,0.4)}
+.hack-name{font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--circuit)}
+.hack-desc{font-size:0.83rem;color:var(--text-muted)}
+#hack-canvas{position:sticky;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;opacity:0.45}
+
+/* ===== PROJECTS ===== */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:28px;max-width:1200px;margin:0 auto}
+.project-card{position:relative;overflow:hidden;cursor:pointer}
+.project-card .glass-card{height:100%;display:flex;flex-direction:column}Settings - Account
+
+.project-img{height:200px;border-radius:var(--radius-sm);overflow:hidden;margin-bottom:16px;background:var(--bg-alt);position:relative}
+.project-img canvas{width:100%;height:100%}
+.project-img .fallback-gradient{width:100%;height:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));opacity:0.3}
+.project-title{font-size:1.2rem;font-weight:600;margin-bottom:8px}
+.project-desc{font-size:0.88rem;color:var(--text-muted);flex:1}
+.project-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.project-tag{font-family:var(--font-mono);font-size:0.7rem;padding:4px 10px;border-radius:20px;background:rgba(108,99,255,0.15);color:var(--accent)}
+.project-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:0.85rem;font-weight:600}
+
+/* ===== SKILLS / RESUME ===== */
+.skills-layout{display:flex;gap:40px;max-width:1100px;margin:0 auto;align-items:center;flex-wrap:wrap;justify-content:center}
+#skills-canvas-wrapper{width:400px;height:400px;position:relative;flex-shrink:0}
+#skills-canvas{width:100%;height:100%}
+.skills-info{flex:1;min-width:300px}
+.skills-info h3{font-size:1.6rem;margin-bottom:16px}
+.skill-tooltip{position:absolute;background:rgba(5,5,16,0.9);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;font-size:0.85rem;pointer-events:none;opacity:0;transition:opacity 0.3s;z-index:10;backdrop-filter:blur(12px)}
+.resume-btn-wrap{margin-top:28px}
+
+/* ===== CONTACT ===== */
+#contact{position:relative}
+#contact-canvas{position:absolute;inset:0;z-index:0}
+.contact-content{position:relative;z-index:2;display:flex;gap:60px;max-width:1000px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+.contact-info{flex:1;min-width:280px}
+.contact-info h2{font-size:2.4rem;margin-bottom:16px}
+.contact-info p{color:var(--text-muted);margin-bottom:24px}
+.social-links{display:flex;gap:16px;flex-wrap:wrap}
+.social-link{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:50px;border:1px solid var(--border);color:var(--text-muted);font-size:0.85rem;transition:var(--transition)}
+.social-link:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+.contact-form{flex:1;min-width:300px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:0.85rem;font-weight:500;margin-bottom:8px;color:var(--text-muted)}
+.form-group input,.form-group textarea{width:100%;padding:14px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:var(--font-body);font-size:0.95rem;backdrop-filter:blur(12px);transition:border-color var(--transition);outline:none}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:120px}
+
+/* ===== FOOTER ===== */
+footer{text-align:center;padding:40px 20px;border-top:1px solid var(--border);color:var(--text-muted);font-size:0.85rem}
+footer .footer-heart{color:var(--accent)}
+
+/* ===== STARFIELD CANVAS ===== */
+#starfield-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ===== CONFETTI ===== */
+#confetti-canvas{position:fixed;inset:0;z-index:9995;pointer-events:none;display:none}
+
+/* ===== MOBILE FALLBACK ===== */
+.mobile-fallback{display:none}
+.mobile-shape{width:200px;height:200px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));animation:mobile-rotate 8s linear infinite;margin:0 auto 30px;position:relative}
+@keyframes mobile-rotate{to{transform:rotate(360deg)}}
+.mobile-photo-wrap{width:200px;height:200px;border-radius:50%;overflow:hidden;margin:0 auto;border:3px solid var(--accent);position:relative}
+.mobile-photo-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(45deg,transparent 40%,rgba(108,99,255,0.2) 50%,transparent 60%);animation:mobile-scan 3s ease-in-out infinite}
+@keyframes mobile-scan{0%,100%{transform:translateX(-100%)}50%{transform:translateX(100%)}}
+.mobile-orbit{width:260px;height:260px;border:1px solid rgba(108,99,255,0.3);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);animation:orbit-spin 6s linear infinite}
+@keyframes orbit-spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.mobile-planet{width:20px;height:20px;border-radius:50%;animation:planet-bob 3s ease-in-out infinite;display:inline-block;margin:8px}
+@keyframes planet-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.mobile-wormhole{width:100%;height:300px;background:radial-gradient(ellipse at center,rgba(45,212,191,0.15) 0%,transparent 70%);animation:wormhole-pulse 4s ease-in-out infinite;position:absolute;inset:0;z-index:0}
+@keyframes wormhole-pulse{0%,100%{opacity:0.5;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
+
+/* ===== CSS 3D TILT FOR PROJECT CARDS ===== */
+.tilt-card{transition:transform 0.3s ease;transform-style:preserve-3d;perspective:800px}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  nav{padding:16px 20px}
+  .nav-links{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:32px;z-index:999}
+  .nav-links.open{display:flex}
+  .nav-hamburger{display:flex}
+  .section{padding:100px 5vw 60px}
+  #about{flex-direction:column;text-align:center}
+  #about-canvas-wrapper{width:260px;height:300px}
+  .about-stats{justify-content:center}
+  .hero-name{font-size:clamp(2.2rem,7vw,3.5rem)}
+  .projects-grid{grid-template-columns:1fr}
+  .skills-layout{flex-direction:column}
+  #skills-canvas-wrapper{width:300px;height:300px}
+  .contact-content{flex-direction:column}
+  .cert-card-wrapper{min-height:auto;padding:40px 0}
+  .cert-card{transform:none!important;opacity:0}
+  .cert-card.in-view{opacity:1}
+  .cert-frame{transform:none!important}
+  .cert-inner{transform:none!important}
+  #theme-toggle{top:16px;right:16px}
+  /* Hide 3D canvases on mobile */
+  .desktop-only-canvas{display:none!important}
+  .mobile-fallback{display:block}
+}
+@media(min-width:769px){
+  .mobile-fallback{display:none!important}
+}
+
+/* ===== ANIMATIONS ===== */
+.fade-up{opacity:0;transform:translateY(40px);transition:opacity 0.8s cubic-bezier(.4,0,.2,1),transform 0.8s cubic-bezier(.4,0,.2,1)}
+.fade-up.visible{opacity:1;transform:translateY(0)}
+.scale-in{opacity:0;transform:scale(0.6);transition:opacity 0.8s,transform 0.8s cubic-bezier(.4,0,.2,1)}
+.scale-in.visible{opacity:1;transform:scale(1)}
+</style>
+</head>
+<body>
+<!-- ===== ANIMATED TECH BACKGROUND ===== -->
+<canvas id="tech-bg-canvas"></canvas>
+
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loader">
+  <div class="curtain-left"></div>
+  <div class="curtain-right"></div>
+  <div id="loader-text" style="z-index:3;display:flex;gap:4px"></div>
+  <div class="scan-line"></div>
+</div>
+
+<!-- ===== THEME WIPE OVERLAY ===== -->
+<div id="theme-wipe"></div>
+
+<!-- ===== CURSOR TRAIL ===== -->
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- ===== STARFIELD BG ===== -->
+<canvas id="starfield-canvas"></canvas>
+
+<!-- ===== CONFETTI CANVAS ===== -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ===== NAVIGATION ===== -->
+<nav id="main-nav">
+  <a href="#hero" class="nav-logo" id="nav-logo">Portfolio</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#certificates">Certificates</a></li>
+    <li><a href="#hackathons">Hackathons</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-hamburger" id="hamburger" onclick="document.getElementById('nav-links').classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- ===== THEME TOGGLE ===== -->
+<button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="section" id="hero">
+  <canvas id="hero-canvas" class="desktop-only-canvas"></canvas>
+  <div class="mobile-fallback"><div class="mobile-shape"></div></div>
+  <div class="hero-content">
+    <p class="hero-greeting" id="hero-greeting"></p>
+    <h1 class="hero-name" id="hero-name"></h1>
+    <p class="hero-tagline" id="hero-tagline"></p>
+    <div class="hero-cta" id="hero-cta"></div>
+  </div>
+  <div class="shape-label" id="shape-label">Icosahedron</div>
+</section>
+
+<!-- ===== ABOUT SECTION ===== -->
+<section class="section" id="about">
+  <div id="about-canvas-wrapper">
+    <canvas id="about-canvas" class="desktop-only-canvas"></canvas>
+    <div class="mobile-fallback">
+      <div style="position:relative;width:220px;height:220px;margin:0 auto">
+        <div class="mobile-photo-wrap">
+          <img id="about-photo-mobile" alt="Photo" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="mobile-orbit"></div>
+        <div class="mobile-orbit" style="animation-duration:4s;width:290px;height:290px;border-color:rgba(45,212,191,0.3)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="about-text fade-up">
+    <span class="section-label">About Me</span>
+    <h2 id="about-heading">About Me</h2>
+    <p id="about-bio"></p>
+    <div class="about-stats" id="about-stats"></div>
+  </div>
+</section>
+
+<!-- ===== EDUCATION SECTION ===== -->
+<section class="section" id="education" style="position:relative;min-height:150vh;padding:0">
+  <canvas id="edu-canvas" class="desktop-only-canvas"></canvas>
+  <div style="position:absolute;top:80px;left:0;width:100%;z-index:2;padding:0 5vw">
+    <div class="section-header fade-up" style="margin-bottom:30px">
+      <span class="section-label">Education</span>
+      <h2><span class="text-reveal">Education</span></h2>
+      <p>Academic journey & technical milestones</p>
+    </div>
+    <div class="edu-timeline" id="edu-timeline"></div>
+  </div>
+</section>
+
+<!-- ===== CERTIFICATES SECTION ===== -->
+<section class="section" id="certificates" style="padding:0; overflow:hidden;">
+  <div id="cert-pin-container" style="position:relative; width:100vw; height:100vh; overflow:hidden;">
+    <div class="cert-header" id="cert-header" style="position:absolute; top:20%; left:0; width:100%; text-align:center; z-index:10; display:flex; flex-direction:column; align-items:center;">
+      <span class="section-label" id="cert-label">Certificates</span>
+      <h2 id="cert-scale-text" style="transform-origin:center; font-size:clamp(2rem, 6vw, 5rem); margin:10px 0; font-family:var(--font-display); color:var(--text); font-weight:700;">Certificates</h2>
+      <p id="cert-sub" style="color:var(--text-muted);">Professional certifications & achievements</p>
+    </div>
+    <div class="cert-h-viewport" id="cert-h-viewport">
+      <!-- Generated via JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ===== HACKATHONS SECTION ===== -->
+<section class="section" id="hackathons" style="position:relative;min-height:180vh;padding:0">
+  <canvas id="hack-canvas" class="desktop-only-canvas"></canvas>
+  <div style="position:absolute;top:80px;left:0;width:100%;z-index:2;pointer-events:none">
+    <div class="section-header fade-up">
+      <span class="section-label">Hackathons</span>
+      <h2><span class="text-reveal">Hackathons</span></h2>
+      <p>Competition wins & collaborative builds</p>
+    </div>
+    <div class="hack-grid" id="hack-grid" style="margin-top:30px"></div>
+  </div>
+</section>
+
+<!-- ===== PROJECTS SECTION ===== -->
+<section class="section" id="projects">
+  <div class="section-header fade-up">
+    <span class="section-label">Projects</span>
+    <h2><span class="text-reveal">Projects</span></h2>
+    <p>Featured work and side experiments</p>
+  </div>
+  <div class="projects-grid" id="projects-grid"></div>
+</section>
+
+<!-- ===== SKILLS / RESUME SECTION ===== -->
+<section class="section" id="skills">
+  <div class="section-header fade-up">
+    <span class="section-label">Skills & Resume</span>
+    <h2><span class="text-reveal">Skills & Resume</span></h2>
+    <p>My technical toolkit and expertise</p>
+  </div>
+  <div class="skills-layout">
+    <div id="skills-canvas-wrapper">
+      <canvas id="skills-canvas" class="desktop-only-canvas"></canvas>
+      <div class="skill-tooltip" id="skill-tooltip"></div>
+      <div class="mobile-fallback" id="skills-mobile" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center"></div>
+    </div>
+    <div class="skills-info">
+      <h3>My Tech Stack</h3>
+      <p style="color:var(--text-muted);margin-bottom:16px" id="skills-desc">Hover over the orbiting planets to explore my skills. Each planet's size represents proficiency level.</p>
+      <div class="glass-card" id="resume-card">
+        <h4 style="margin-bottom:12px">📄 Resume</h4>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px">Download my complete resume for a detailed overview of my experience and skills.</p>
+        <div class="resume-btn-wrap">
+          <a class="btn btn-primary magnetic-btn" id="resume-dl-btn" href="#" target="_blank">Download Resume ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT SECTION ===== -->
+<section class="section" id="contact">
+  <canvas id="contact-canvas" class="desktop-only-canvas"></canvas>
+  <div class="mobile-fallback mobile-wormhole"></div>
+  <div class="contact-content">
+    <div class="contact-info fade-up">
+      <span class="section-label">Get In Touch</span>
+      <h2>Let's Build Together</h2>
+      <p id="contact-desc">Have a project in mind or just want to chat? Reach out!</p>
+      <div class="social-links" id="social-links"></div>
+    </div>
+    <form class="contact-form glass-card fade-up" id="contact-form">
+      <div class="form-group">
+        <label for="contact-name">Name</label>
+        <input type="text" id="contact-name" placeholder="Your name" required>
+      </div>
+      <div class="form-group">
+        <label for="contact-email">Email</label>
+        <input type="email" id="contact-email" placeholder="your@email.com" required>
+      </div>
+      <div class="form-group">
+        <label for="contact-message">Message</label>
+        <textarea id="contact-message" placeholder="Tell me about your project..." required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary magnetic-btn" id="contact-submit-btn" style="width:100%">Send Message 🚀</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p id="footer-text"></p>
+</footer>
+
+<!-- ===== CDN SCRIPTS ===== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+// roundRect polyfill for older browsers
+if (typeof CanvasRenderingContext2D.prototype.roundRect !== 'function') {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (typeof r === 'undefined') r = 0;
+    if (Array.isArray(r)) r = r[0] || 0;
+    if (typeof r === 'object') r = r.tl || 0;
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    this.closePath();
+    return this;
+  };
+}
+
+/* ===========================================================
+   PORTFOLIO DATA — CHANGE THIS OBJECT TO UPDATE ENTIRE SITE
+   =========================================================== */
+const PORTFOLIO = {
+  name: "Priyanshu",
+  firstName: "Priyanshu",
+  lastName: "",
+  greeting: "Hello, I'm",
+  tagline: "Creative Developer & Designer",
+  tagline2: "Building immersive digital experiences with code and creativity",
+  bio: "I'm a passionate developer who loves building beautiful, interactive web experiences. I combine creative design with solid engineering to craft digital products that delight users and solve real problems.",
+  stats: [
+    { number: "10+", label: "Projects" },
+    { number: "5+", label: "Hackathons" },
+    { number: "3+", label: "Certificates" }
+  ],
+  education: [
+    { year: "2024 – Present", title: "B.Tech Computer Science", institution: "Your University", desc: "Pursuing Computer Science with focus on AI/ML and Web Technologies" },
+    { year: "2022 – 2024", title: "Higher Secondary (XII)", institution: "Your School", desc: "Science stream with Mathematics and Computer Science" },
+    { year: "2020 – 2022", title: "Secondary (X)", institution: "Your School", desc: "Foundation in sciences and mathematics" }
+  ],
+  certificates: [
+    { name: "Full Stack Web Development", issuer: "Udemy", date: "2024", desc: "Comprehensive course covering React, Node.js, MongoDB and deployment" },
+    { name: "Machine Learning Specialization", issuer: "Coursera", date: "2024", desc: "Andrew Ng's ML course covering supervised/unsupervised learning" },
+    { name: "Cloud Computing Fundamentals", issuer: "Google Cloud", date: "2023", desc: "GCP fundamentals, cloud architecture and serverless computing" }
+  ],
+  hackathons: [
+    { name: "HackTheVerse 2024", place: "1st", placeClass: "gold", desc: "Built an AI-powered accessibility tool for visually impaired users" },
+    { name: "CodeStorm 2024", place: "2nd", placeClass: "silver", desc: "Created a real-time collaborative coding platform" },
+    { name: "DevHacks 2023", place: "1st", placeClass: "gold", desc: "Developed a blockchain-based supply chain tracker" },
+    { name: "InnovateFest 2023", place: "3rd", placeClass: "bronze", desc: "Built a mental health chatbot with NLP" }
+  ],
+  projects: [
+    { title: "AI Code Assistant", desc: "An intelligent coding companion that helps developers write better code with real-time suggestions and error detection.", tags: ["Python", "GPT-4", "React", "WebSocket"], link: "#", color: "#6c63ff" },
+    { title: "EcoTrack Dashboard", desc: "Real-time environmental monitoring dashboard with interactive data visualization and predictive analytics.", tags: ["Next.js", "D3.js", "IoT", "PostgreSQL"], link: "#", color: "#2dd4bf" },
+    { title: "SoundScape", desc: "Generative music platform that creates ambient soundscapes based on user mood and environment data.", tags: ["Web Audio API", "Three.js", "TensorFlow"], link: "#", color: "#f59e0b" },
+    { title: "CryptoVault", desc: "Secure cryptocurrency portfolio tracker with real-time market data and predictive price analysis.", tags: ["React", "Node.js", "Blockchain", "Chart.js"], link: "#", color: "#ec4899" }
+  ],
+  skills: [
+    { name: "JavaScript", level: 90, color: "#f59e0b" },
+    { name: "React", level: 85, color: "#61dafb" },
+    { name: "Python", level: 80, color: "#3776ab" },
+    { name: "Node.js", level: 78, color: "#68a063" },
+    { name: "Three.js", level: 70, color: "#6c63ff" },
+    { name: "CSS/SASS", level: 88, color: "#ec4899" },
+    { name: "TypeScript", level: 75, color: "#3178c6" },
+    { name: "MongoDB", level: 72, color: "#4db33d" },
+    { name: "Git", level: 85, color: "#f05032" },
+    { name: "Figma", level: 68, color: "#a259ff" }
+  ],
+  socialLinks: [
+    { name: "GitHub", url: "https://github.com", icon: "⌨️" },
+    { name: "LinkedIn", url: "https://linkedin.com", icon: "💼" },
+    { name: "Twitter", url: "https://twitter.com", icon: "🐦" },
+    { name: "Email", url: "mailto:hello@example.com", icon: "✉️" }
+  ],
+  resumeUrl: "#",
+  footerText: "Designed & Built with <span class='footer-heart'>♥</span> by"
+};
+
+/* ===========================================================
+   PHOTO CONFIG
+   =========================================================== */
+const MY_PHOTO = './profile.png';
+
+/* ===========================================================
+   GLOBAL STATE
+   =========================================================== */
+const isMobile = window.innerWidth < 769;
+const mouse = { x: 0, y: 0, nx: 0, ny: 0 };
+let currentTheme = localStorage.getItem('theme') || 'dark';
+const activeScenes = {};
+const cursorDots = [];
+const CURSOR_DOT_COUNT = 10;
+
+/* ===========================================================
+   POPULATE HTML FROM PORTFOLIO DATA
+   =========================================================== */
+function populateContent() {
+  // Nav
+  document.getElementById('nav-logo').textContent = PORTFOLIO.firstName || PORTFOLIO.name;
+
+  // Hero
+  document.getElementById('hero-greeting').textContent = PORTFOLIO.greeting;
+  document.getElementById('hero-name').innerHTML = `<span class="gradient-text">${PORTFOLIO.name}</span>`;
+  document.getElementById('hero-tagline').textContent = PORTFOLIO.tagline2;
+  document.getElementById('hero-cta').innerHTML = `
+    <a href="#projects" class="btn btn-primary magnetic-btn">View Projects</a>
+    <a href="#contact" class="btn btn-outline magnetic-btn">Get In Touch</a>
+  `;
+
+  // About
+  document.getElementById('about-heading').textContent = `I'm ${PORTFOLIO.firstName}`;
+  document.getElementById('about-bio').textContent = PORTFOLIO.bio;
+  const statsEl = document.getElementById('about-stats');
+  PORTFOLIO.stats.forEach(s => {
+    statsEl.innerHTML += `<div class="stat-item"><div class="stat-number">${s.number}</div><div class="stat-label">${s.label}</div></div>`;
+  });
+
+  // Education
+  const eduEl = document.getElementById('edu-timeline');
+  PORTFOLIO.education.forEach(e => {
+    eduEl.innerHTML += `
+      <div class="edu-card fade-up">
+        <div class="glass-card">
+          <span class="edu-year">// ${e.year}</span>
+          <h3 class="edu-title">${e.title}</h3>
+          <p class="edu-inst">🏛 ${e.institution}</p>
+          <p class="edu-desc">${e.desc}</p>
+        </div>
+      </div>`;
+  });
+
+  // Certificates — Horizontal Scroll
+  const certTrack = document.getElementById('cert-h-viewport');
+  if (certTrack) {
+    PORTFOLIO.certificates.forEach((c, i) => {
+      // Calculate a starting offset based on index
+      // All panels are initially absolutely positioned taking full space
+      certTrack.innerHTML += `
+        <div class="cert-h-panel cert-panel-${i}">
+          <div class="cert-h-visual">
+            <div class="cert-h-visual-inner">
+              <span style="color:var(--circuit); font-family:var(--font-mono); font-size:0.8rem; letter-spacing:2px; margin-bottom:10px">CERTIFICATE</span>
+              <div style="width:40px; height:2px; background:var(--accent); margin-bottom:10px"></div>
+              <div style="font-family:var(--font-display); font-size:1.2rem; color:white; text-align:center; padding:0 15px">${c.name}</div>
+            </div>
+          </div>
+          <div class="cert-h-details">
+            <h3 class="cert-h-title">${c.name}</h3>
+            <div class="cert-h-issuer">🏛 ${c.issuer}</div>
+            <div class="cert-h-date">// ${c.date}</div>
+            <p class="cert-h-desc">${c.desc}</p>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+
+  // Hackathons
+  const hackEl = document.getElementById('hack-grid');
+  PORTFOLIO.hackathons.forEach((h, i) => {
+    hackEl.innerHTML += `
+      <div class="hack-card fade-up" data-index="${i}">
+        <div class="glass-card">
+          <div class="hack-place ${h.placeClass}">${h.place === '1st' ? '🏆' : h.place === '2nd' ? '🥈' : '🥉'} ${h.place} Place</div>
+          <h3 class="hack-name">${h.name}</h3>
+          <p class="hack-desc">${h.desc}</p>
+        </div>
+      </div>`;
+  });
+
+  // Projects
+  const projEl = document.getElementById('projects-grid');
+  PORTFOLIO.projects.forEach((p, i) => {
+    projEl.innerHTML += `
+      <div class="project-card tilt-card fade-up" data-index="${i}">
+        <div class="glass-card">
+          <div class="project-img"><div class="fallback-gradient" style="background:linear-gradient(135deg,${p.color},${p.color}88)"></div></div>
+          <h3 class="project-title">${p.title}</h3>
+          <p class="project-desc">${p.desc}</p>
+          <div class="project-tags">${p.tags.map(t => `<span class="project-tag">${t}</span>`).join('')}</div>
+          <a href="${p.link}" class="project-link" target="_blank">View Project →</a>
+        </div>
+      </div>`;
+  });
+
+  // Skills mobile fallback
+  const skillsMobile = document.getElementById('skills-mobile');
+  PORTFOLIO.skills.forEach(s => {
+    skillsMobile.innerHTML += `<div class="mobile-planet" style="background:${s.color};width:${s.level * 0.5 + 16}px;height:${s.level * 0.5 + 16}px" title="${s.name}: ${s.level}%"></div>`;
+  });
+
+  // Resume
+  document.getElementById('resume-dl-btn').href = PORTFOLIO.resumeUrl;
+
+  // Contact
+  const socialEl = document.getElementById('social-links');
+  PORTFOLIO.socialLinks.forEach(l => {
+    socialEl.innerHTML += `<a href="${l.url}" class="social-link magnetic-btn" target="_blank">${l.icon} ${l.name}</a>`;
+  });
+
+  // Footer
+  document.getElementById('footer-text').innerHTML = `${PORTFOLIO.footerText} ${PORTFOLIO.name} © ${new Date().getFullYear()}`;
+
+  // Mobile photo
+  const mobileImg = document.getElementById('about-photo-mobile');
+  if (mobileImg) {
+    mobileImg.src = MY_PHOTO;
+    mobileImg.onerror = () => {
+      mobileImg.style.display = 'none';
+      mobileImg.parentElement.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--accent),var(--accent2));font-size:3rem;font-weight:800;color:#fff;font-family:var(--font-display)">${(PORTFOLIO.firstName || 'P')[0]}</div>`;
+    };
+  }
+}
+
+/* ===========================================================
+   THEME MANAGEMENT
+   =========================================================== */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-toggle').textContent = theme === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('theme', theme);
+  currentTheme = theme;
+}
+applyTheme(currentTheme);
+
+document.getElementById('theme-toggle').addEventListener('click', function(e) {
+  const rect = this.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const wipe = document.getElementById('theme-wipe');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  // Set wipe bg to the NEW theme's background
+  wipe.style.background = newTheme === 'dark' ? '#050510' : '#fafaf8';
+  wipe.style.clipPath = `circle(0% at ${x}px ${y}px)`;
+  wipe.style.transition = 'none';
+
+  requestAnimationFrame(() => {
+    wipe.style.transition = 'clip-path 0.6s cubic-bezier(.4,0,.2,1)';
+    const maxDim = Math.max(window.innerWidth, window.innerHeight) * 1.5;
+    const pct = (maxDim / window.innerWidth) * 100;
+    wipe.style.clipPath = `circle(${pct}% at ${x}px ${y}px)`;
+  });
+
+  setTimeout(() => {
+    applyTheme(newTheme);
+    wipe.style.transition = 'none';
+    wipe.style.clipPath = `circle(0% at ${x}px ${y}px)`;
+  }, 620);
+});
+
+/* ===========================================================
+   CURSOR TRAIL
+   =========================================================== */
+function initCursorTrail() {
+  if (isMobile) return;
+  for (let i = 0; i < CURSOR_DOT_COUNT; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    const size = Math.max(3, 12 - i * 1);
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    dot.style.opacity = 1 - i * 0.09;
+    document.body.appendChild(dot);
+    cursorDots.push({ el: dot, x: 0, y: 0 });
+  }
+}
+
+function updateCursorTrail() {
+  if (isMobile) return;
+  let px = mouse.x, py = mouse.y;
+  cursorDots.forEach((dot, i) => {
+    const speed = 0.35 - i * 0.02;
+    dot.x += (px - dot.x) * speed;
+    dot.y += (py - dot.y) * speed;
+    dot.el.style.transform = `translate(${dot.x - parseFloat(dot.el.style.width) / 2}px, ${dot.y - parseFloat(dot.el.style.height) / 2}px)`;
+    px = dot.x;
+    py = dot.y;
+  });
+  requestAnimationFrame(updateCursorTrail);
+}
+
+/* ===========================================================
+   CURSOR RING
+   =========================================================== */
+const cursorRing = document.getElementById('cursor-ring');
+function updateCursorRing() {
+  if (isMobile) return;
+  cursorRing.style.left = mouse.x + 'px';
+  cursorRing.style.top = mouse.y + 'px';
+  requestAnimationFrame(updateCursorRing);
+}
+
+/* ===========================================================
+   MOUSE EVENTS
+   =========================================================== */
+document.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+  mouse.nx = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.ny = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+
+document.addEventListener('mouseover', e => {
+  const interactive = e.target.closest('a, button, .glass-card, .project-card, .hack-card');
+  if (interactive) cursorRing.classList.add('active');
+});
+document.addEventListener('mouseout', e => {
+  const interactive = e.target.closest('a, button, .glass-card, .project-card, .hack-card');
+  if (interactive) cursorRing.classList.remove('active');
+});
+
+/* ===========================================================
+   MAGNETIC BUTTONS
+   =========================================================== */
+function initMagneticButtons() {
+  if (isMobile) return;
+  document.querySelectorAll('.magnetic-btn').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 80) {
+        const pull = (80 - dist) / 80;
+        btn.style.transform = `translate(${dx * pull * 0.4}px, ${dy * pull * 0.4}px)`;
+      }
+    });
+    btn.addEventListener('mouseleave', () => {
+      btn.style.transform = '';
+    });
+    btn.addEventListener('click', function(e) {
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      const rect = this.getBoundingClientRect();
+      ripple.style.left = (e.clientX - rect.left) + 'px';
+      ripple.style.top = (e.clientY - rect.top) + 'px';
+      this.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+}
+
+/* ===========================================================
+   CSS 3D TILT FOR PROJECT CARDS
+   =========================================================== */
+function initTiltCards() {
+  if (isMobile) return;
+  document.querySelectorAll('.tilt-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const cx = (e.clientX - rect.left) / rect.width - 0.5;
+      const cy = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `perspective(800px) rotateY(${cx * 12}deg) rotateX(${-cy * 12}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
+}
+
+/* ===========================================================
+   SCROLL TRIGGER SETUP
+   =========================================================== */
+function initScrollAnimations() {
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Fade-up elements
+  document.querySelectorAll('.fade-up').forEach(el => {
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top 85%',
+      onEnter: () => el.classList.add('visible'),
+    });
+  });
+
+  // Section headers reveal
+  document.querySelectorAll('.section-header h2').forEach(h2 => {
+    ScrollTrigger.create({
+      trigger: h2,
+      start: 'top 80%',
+      onEnter: () => h2.classList.add('revealed'),
+    });
+  });
+
+  // Scale-in 3D canvases
+  document.querySelectorAll('.desktop-only-canvas').forEach(cvs => {
+    if (cvs.id === 'starfield-canvas' || cvs.id === 'hero-canvas') return;
+    gsap.fromTo(cvs, { scale: 0.6, opacity: 0 }, {
+      scale: 1, opacity: 1, duration: 1, ease: 'power2.out',
+      scrollTrigger: { trigger: cvs, start: 'top 85%' }
+    });
+  });
+}
+
+/* ===========================================================
+   THREE.JS HELPER
+   =========================================================== */
+function createRenderer(canvas, options = {}) {
+  try {
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      ...options
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    return renderer;
+  } catch (e) {
+    console.warn("WebGL not supported or failed to initialize:", e);
+    return null;
+  }
+}
+
+function resizeRenderer(renderer, canvas) {
+  const parent = canvas.parentElement;
+  const w = parent ? parent.clientWidth : window.innerWidth;
+  const h = parent ? parent.clientHeight : window.innerHeight;
+  renderer.setSize(w, h);
+  return { w, h };
+}
+
+/* ===========================================================
+   ANIMATED TECH BACKGROUND — CIRCUIT BOARD
+   =========================================================== */
+function initTechBackground() {
+  const canvas = document.getElementById('tech-bg-canvas');
+  const ctx = canvas.getContext('2d');
+
+  let W = window.innerWidth, H = window.innerHeight;
+  canvas.width = W; canvas.height = H;
+  window.addEventListener('resize', () => {
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W; canvas.height = H;
+    buildCircuit();
+  });
+
+  const COL_PRIMARY = '#00d2ff';
+  const COL_PURPLE  = '#7b2fff';
+  const COL_GREEN   = '#39ff14';
+  const COL_PINK    = '#ff00ff';
+  const COLORS = [COL_PRIMARY, COL_PURPLE, COL_GREEN, COL_PINK];
+
+  // Circuit node structure
+  let nodes = [], traces = [], pulses = [], hexagons = [];
+
+  function buildCircuit() {
+    nodes = []; traces = []; hexagons = [];
+    const cols = Math.ceil(W / 120), rows = Math.ceil(H / 120);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        if (Math.random() > 0.55) continue;
+        nodes.push({
+          x: c * 120 + Math.random() * 40 - 20,
+          y: r * 120 + Math.random() * 40 - 20,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          size: Math.random() * 3 + 2,
+          pulse: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.02 + Math.random() * 0.02
+        });
+      }
+    }
+    // Build traces between close nodes
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if (dist < 160 && Math.random() > 0.5) {
+          traces.push({ a: i, b: j, color: nodes[i].color, opacity: 0.08 + Math.random()*0.1 });
+        }
+      }
+    }
+    // Hexagons
+    for (let i = 0; i < 12; i++) {
+      hexagons.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 40 + Math.random() * 80, rotation: Math.random() * Math.PI,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        opacity: 0.03 + Math.random() * 0.05
+      });
+    }
+    // Seed pulses
+    traces.forEach((t, i) => {
+      if (Math.random() > 0.7) {
+        pulses.push({ traceIdx: i, t: Math.random(), speed: 0.003 + Math.random() * 0.006, color: nodes[t.a].color });
+      }
+    });
+  }
+  buildCircuit();
+
+  function drawHex(x, y, r, rot) {
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const a = rot + (i * Math.PI / 3);
+      i === 0 ? ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a))
+               : ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+    }
+    ctx.closePath();
+  }
+
+  let frame = 0;
+  function render() {
+    frame++;
+    ctx.clearRect(0, 0, W, H);
+
+    // Dark base gradient
+    const bgGrad = ctx.createRadialGradient(W*0.3, H*0.3, 0, W*0.6, H*0.6, W*0.9);
+    bgGrad.addColorStop(0, '#06102a');
+    bgGrad.addColorStop(0.5, '#060816');
+    bgGrad.addColorStop(1, '#030610');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, W, H);
+
+    // Draw hexagons
+    hexagons.forEach(h => {
+      h.rotation += 0.001;
+      drawHex(h.x, h.y, h.r, h.rotation);
+      ctx.strokeStyle = h.color;
+      ctx.globalAlpha = h.opacity + Math.sin(frame * 0.01 + h.x) * 0.01;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+
+    // Draw traces
+    traces.forEach(t => {
+      const a = nodes[t.a], b = nodes[t.b];
+      // Right-angle circuit trace
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, a.y); // Horizontal
+      ctx.lineTo(b.x, b.y); // Vertical
+      ctx.strokeStyle = t.color;
+      ctx.globalAlpha = t.opacity;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+
+    // Draw nodes
+    nodes.forEach(n => {
+      n.pulse += n.pulseSpeed;
+      const glow = (Math.sin(n.pulse) + 1) * 0.5;
+
+      // Outer glow
+      const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.size * 6);
+      grad.addColorStop(0, n.color + 'aa');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.globalAlpha = glow * 0.5;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.size * 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Core dot
+      ctx.globalAlpha = 0.6 + glow * 0.4;
+      ctx.fillStyle = n.color;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.size * (0.8 + glow * 0.4), 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // Draw data pulses
+    pulses.forEach((p, i) => {
+      p.t += p.speed;
+      if (p.t > 1) p.t = 0;
+      const t = traces[p.traceIdx];
+      if (!t) return;
+      const a = nodes[t.a], b = nodes[t.b];
+      // Move along the right-angle path
+      let px, py;
+      if (p.t < 0.5) {
+        px = a.x + (b.x - a.x) * (p.t * 2);
+        py = a.y;
+      } else {
+        px = b.x;
+        py = a.y + (b.y - a.y) * ((p.t - 0.5) * 2);
+      }
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, 6);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.3, p.color);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      ctx.arc(px, py, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    // Scanline overlay
+    ctx.fillStyle = `rgba(0,210,255,${0.012 + 0.005 * Math.sin(frame * 0.05)})`;
+    for (let y = 0; y < H; y += 4) {
+      ctx.fillRect(0, y, W, 1);
+    }
+
+    requestAnimationFrame(render);
+  }
+  render();
+}
+
+/* ===========================================================
+   STARFIELD PARALLAX BACKGROUND
+   =========================================================== */
+function initStarfield() {
+  const canvas = document.getElementById('starfield-canvas');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 300;
+
+  const layers = [
+    { count: 600, speed: 0.3, size: 1.5, depth: 200 },
+    { count: 400, speed: 0.6, size: 2.0, depth: 150 },
+    { count: 200, speed: 1.0, size: 3.0, depth: 100 }
+  ];
+
+  const starGroups = [];
+  layers.forEach(layer => {
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(layer.count * 3);
+    const colors = new Float32Array(layer.count * 3);
+    for (let i = 0; i < layer.count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 1200;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 800;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * layer.depth;
+      colors[i * 3] = 0.8 + Math.random() * 0.2;
+      colors[i * 3 + 1] = 0.8 + Math.random() * 0.2;
+      colors[i * 3 + 2] = 1;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    const mat = new THREE.PointsMaterial({
+      size: layer.size,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      sizeAttenuation: true
+    });
+    const points = new THREE.Points(geo, mat);
+    scene.add(points);
+    starGroups.push({ points, speed: layer.speed, positions });
+  });
+
+  let scrollY = 0;
+  window.addEventListener('scroll', () => { scrollY = window.pageYOffset; });
+
+  function resize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const loop = () => {
+    const scrollFactor = scrollY * 0.0005;
+    starGroups.forEach(g => {
+      g.points.position.y = scrollY * g.speed * 0.08;
+      g.points.rotation.z += 0.0001 * g.speed;
+      // Color shift on scroll
+      const hue = (scrollFactor * 0.3) % 1;
+      g.points.material.color.setHSL(hue, 0.2, 0.9);
+    });
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  activeScenes.starfield = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   HERO — SHAPE MORPHING SYSTEM
+   =========================================================== */
+function initHeroShapeMorph() {
+  if (isMobile) return;
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.z = 4;
+
+  // Lights
+  const ambientLight = new THREE.AmbientLight(0x222244, 0.5);
+  scene.add(ambientLight);
+  const pointLight = new THREE.PointLight(0x6c63ff, 1.5, 50);
+  pointLight.position.set(3, 3, 5);
+  scene.add(pointLight);
+
+  // Shape definitions
+  const shapes = [
+    { name: 'Icosahedron', color: 0x6c63ff, factory: () => new THREE.IcosahedronGeometry(1.3, 4) },
+    { name: 'Octahedron', color: 0x2dd4bf, factory: () => new THREE.OctahedronGeometry(1.3, 4) },
+    { name: 'Torus Knot', color: 0xf59e0b, factory: () => new THREE.TorusKnotGeometry(0.9, 0.3, 128, 32) },
+    { name: 'Dodecahedron', color: 0xec4899, factory: () => new THREE.DodecahedronGeometry(1.3, 3) },
+    { name: 'Sphere', color: 0x22d3ee, factory: () => new THREE.SphereGeometry(1.3, 32, 32) },
+    { name: 'Cone', color: 0xf97316, factory: () => new THREE.ConeGeometry(1.2, 2, 32, 16) },
+    { name: 'Torus', color: 0xa78bfa, factory: () => new THREE.TorusGeometry(1, 0.4, 32, 64) }
+  ];
+
+  // Normalize vertex counts — resample all to same count
+  const TARGET_COUNT = 2562; // IcosahedronGeometry(1,4) vertex count
+  const shapePositions = [];
+
+  shapes.forEach(s => {
+    const geo = s.factory();
+    const pos = geo.attributes.position.array;
+    const vertCount = pos.length / 3;
+    const resampled = new Float32Array(TARGET_COUNT * 3);
+
+    for (let i = 0; i < TARGET_COUNT; i++) {
+      const srcIdx = Math.floor((i / TARGET_COUNT) * vertCount);
+      resampled[i * 3] = pos[srcIdx * 3];
+      resampled[i * 3 + 1] = pos[srcIdx * 3 + 1];
+      resampled[i * 3 + 2] = pos[srcIdx * 3 + 2];
+    }
+    shapePositions.push(resampled);
+    geo.dispose();
+  });
+
+  // Create main mesh
+  const baseGeo = new THREE.BufferGeometry();
+  const posAttr = new THREE.BufferAttribute(new Float32Array(shapePositions[0]), 3);
+  baseGeo.setAttribute('position', posAttr);
+  baseGeo.computeVertexNormals();
+
+  const solidMat = new THREE.MeshPhongMaterial({
+    color: shapes[0].color,
+    emissive: shapes[0].color,
+    emissiveIntensity: 0.15,
+    transparent: true,
+    opacity: 0.35,
+    shininess: 60,
+    side: THREE.DoubleSide
+  });
+
+  const wireMat = new THREE.MeshBasicMaterial({
+    color: shapes[0].color,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.6
+  });
+
+  const solidMesh = new THREE.Mesh(baseGeo, solidMat);
+  const wireMesh = new THREE.Mesh(baseGeo, wireMat);
+  scene.add(solidMesh);
+  scene.add(wireMesh);
+
+  let currentShape = 0;
+  let targetPositions = shapePositions[0];
+  let morphProgress = 1;
+  const shapeLabel = document.getElementById('shape-label');
+  let rotTarget = { x: 0, y: 0 };
+  let exploding = false;
+
+  // Morph to next shape
+  function morphToShape(index) {
+    currentShape = index % shapes.length;
+    targetPositions = shapePositions[currentShape];
+    const col = new THREE.Color(shapes[currentShape].color);
+
+    shapeLabel.style.opacity = '0';
+    setTimeout(() => {
+      shapeLabel.textContent = shapes[currentShape].name;
+      shapeLabel.style.opacity = '0.6';
+    }, 400);
+
+    gsap.to({ progress: 0 }, {
+      progress: 1,
+      duration: 1.5,
+      ease: 'power2.inOut',
+      onUpdate: function() {
+        morphProgress = this.targets()[0].progress;
+      }
+    });
+
+    gsap.to(pointLight.color, { r: col.r, g: col.g, b: col.b, duration: 1.5 });
+    gsap.to(solidMat.emissive, { r: col.r, g: col.g, b: col.b, duration: 1.5 });
+    gsap.to(solidMat.color, { r: col.r, g: col.g, b: col.b, duration: 1.5 });
+    gsap.to(wireMat.color, { r: col.r, g: col.g, b: col.b, duration: 1.5 });
+  }
+
+  // Auto morph every 4 seconds
+  let morphTimer = setInterval(() => {
+    if (!exploding) morphToShape(currentShape + 1);
+  }, 4000);
+
+  // Click explode
+  canvas.addEventListener('click', () => {
+    if (exploding) return;
+    exploding = true;
+    clearInterval(morphTimer);
+    gsap.to(solidMesh.scale, { x: 3, y: 3, z: 3, duration: 0.5, ease: 'power2.out' });
+    gsap.to(wireMesh.scale, { x: 3, y: 3, z: 3, duration: 0.5, ease: 'power2.out' });
+    gsap.to([solidMat, wireMat], { opacity: 0, duration: 0.5 });
+
+    setTimeout(() => {
+      morphToShape(currentShape + 1);
+      solidMesh.scale.set(0.1, 0.1, 0.1);
+      wireMesh.scale.set(0.1, 0.1, 0.1);
+      gsap.to(solidMesh.scale, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'elastic.out(1,0.5)' });
+      gsap.to(wireMesh.scale, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'elastic.out(1,0.5)' });
+      gsap.to(solidMat, { opacity: 0.35, duration: 0.6 });
+      gsap.to(wireMat, { opacity: 0.6, duration: 0.6 });
+      exploding = false;
+      morphTimer = setInterval(() => {
+        if (!exploding) morphToShape(currentShape + 1);
+      }, 4000);
+    }, 600);
+  });
+
+  function resize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let prevPos = new Float32Array(TARGET_COUNT * 3);
+  prevPos.set(shapePositions[0]);
+
+  const loop = () => {
+    // Mouse-driven rotation
+    rotTarget.x = mouse.ny * 0.5;
+    rotTarget.y = mouse.nx * 0.5;
+    solidMesh.rotation.x += (rotTarget.x - solidMesh.rotation.x) * 0.05;
+    solidMesh.rotation.y += (rotTarget.y - solidMesh.rotation.y) * 0.05;
+    wireMesh.rotation.x = solidMesh.rotation.x;
+    wireMesh.rotation.y = solidMesh.rotation.y;
+
+    // Morph vertices
+    const positions = baseGeo.attributes.position.array;
+    for (let i = 0; i < TARGET_COUNT * 3; i++) {
+      prevPos[i] += (targetPositions[i] - prevPos[i]) * 0.05;
+      positions[i] = prevPos[i];
+    }
+    baseGeo.attributes.position.needsUpdate = true;
+    baseGeo.computeVertexNormals();
+
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  activeScenes.hero = { renderer, scene, camera, loop };
+  shapeLabel.style.opacity = '0.6';
+}
+
+/* ===========================================================
+   ABOUT — HOLOGRAPHIC PHOTO + ORBIT RINGS + PARTICLES
+   =========================================================== */
+function initAboutSection() {
+  if (isMobile) return;
+  const canvas = document.getElementById('about-canvas');
+  const wrapper = document.getElementById('about-canvas-wrapper');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 380 / 450, 0.1, 100);
+  camera.position.z = 4;
+
+  const ambLight = new THREE.AmbientLight(0x444466, 0.6);
+  scene.add(ambLight);
+  const pLight = new THREE.PointLight(0x6c63ff, 1, 20);
+  pLight.position.set(2, 2, 4);
+  scene.add(pLight);
+
+  // Holographic shader material
+  const holoVertexShader = `
+    varying vec2 vUv;
+    varying vec3 vPos;
+    uniform float uTime;
+    uniform float uHover;
+    void main() {
+      vUv = uv;
+      vPos = position;
+      vec3 pos = position;
+      // Wind ripple
+      pos.z += sin(pos.x * 3.0 + uTime * 2.0) * 0.03 * (1.0 - uHover);
+      pos.z += sin(pos.y * 4.0 + uTime * 1.5) * 0.02 * (1.0 - uHover);
+      // Glitch displacement on hover
+      pos.x += sin(pos.y * 20.0 + uTime * 10.0) * 0.015 * uHover;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    }
+  `;
+  const holoFragmentShader = `
+    varying vec2 vUv;
+    varying vec3 vPos;
+    uniform sampler2D uTexture;
+    uniform float uTime;
+    uniform float uHover;
+    uniform float uHasTexture;
+    void main() {
+      vec2 uv = vUv;
+      // Chromatic aberration on hover
+      float aberr = uHover * 0.015;
+      vec4 color;
+      if (uHasTexture > 0.5) {
+        float r = texture2D(uTexture, uv + vec2(aberr, 0.0)).r;
+        float g = texture2D(uTexture, uv).g;
+        float b = texture2D(uTexture, uv - vec2(aberr, 0.0)).b;
+        color = vec4(r, g, b, 1.0);
+      } else {
+        // Fallback gradient with initials effect
+        color = vec4(0.42, 0.39, 1.0, 1.0);
+        float circle = smoothstep(0.35, 0.33, length(uv - 0.5));
+        color = mix(vec4(0.1, 0.1, 0.2, 1.0), color, circle);
+      }
+      // Scan lines
+      float scanLine = sin(vUv.y * 200.0 + uTime * 5.0) * 0.04;
+      color.rgb += scanLine * uHover;
+      // Holographic sheen
+      float sheen = sin(vUv.y * 5.0 - uTime) * 0.05 + 0.05;
+      color.rgb += vec3(0.3, 0.4, 1.0) * sheen * 0.3;
+      // Edge glow
+      float edge = smoothstep(0.48, 0.5, abs(vUv.x - 0.5)) + smoothstep(0.48, 0.5, abs(vUv.y - 0.5));
+      color.rgb += vec3(0.42, 0.39, 1.0) * edge * 0.5;
+      gl_FragColor = color;
+    }
+  `;
+
+  // Load photo texture
+  const textureLoader = new THREE.TextureLoader();
+  const uniforms = {
+    uTexture: { value: null },
+    uTime: { value: 0 },
+    uHover: { value: 0 },
+    uHasTexture: { value: 0 }
+  };
+
+  textureLoader.load(MY_PHOTO,
+    tex => {
+      uniforms.uTexture.value = tex;
+      uniforms.uHasTexture.value = 1;
+    },
+    undefined,
+    () => {
+      // Fallback: create initials texture
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = 512;
+      fallbackCanvas.height = 512;
+      const ctx = fallbackCanvas.getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 512, 512);
+      grad.addColorStop(0, '#6c63ff');
+      grad.addColorStop(1, '#2dd4bf');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 180px Syne, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText((PORTFOLIO.firstName || 'P')[0], 256, 256);
+      const fallbackTex = new THREE.CanvasTexture(fallbackCanvas);
+      uniforms.uTexture.value = fallbackTex;
+      uniforms.uHasTexture.value = 1;
+    }
+  );
+
+  const photoMat = new THREE.ShaderMaterial({
+    vertexShader: holoVertexShader,
+    fragmentShader: holoFragmentShader,
+    uniforms,
+    side: THREE.DoubleSide
+  });
+
+  const photoPlane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2.4, 32, 32), photoMat);
+  scene.add(photoPlane);
+
+  // Orbit rings
+  const rings = [];
+  const ringAngles = [30, 60, 90];
+  const ringRadii = [1.4, 1.7, 2.0];
+  const ringColors = [0x6c63ff, 0x2dd4bf, 0xf59e0b];
+  const ringSpeeds = [0.8, 1.2, 0.5];
+
+  ringAngles.forEach((angle, i) => {
+    const ringGeo = new THREE.TorusGeometry(ringRadii[i], 0.015, 8, 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: ringColors[i],
+      transparent: true,
+      opacity: 0.6
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = THREE.MathUtils.degToRad(angle);
+    scene.add(ring);
+    rings.push({ mesh: ring, speed: ringSpeeds[i], baseAngle: angle });
+  });
+
+  // Particle system for disperse effect
+  const PARTICLE_COUNT = 2000;
+  const particlesGeo = new THREE.BufferGeometry();
+  const particlePositions = new Float32Array(PARTICLE_COUNT * 3);
+  const particleTargets = new Float32Array(PARTICLE_COUNT * 3);
+  const particleColors = new Float32Array(PARTICLE_COUNT * 3);
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    // Map to photo plane area
+    const x = (Math.random() - 0.5) * 2;
+    const y = (Math.random() - 0.5) * 2.4;
+    particlePositions[i * 3] = x;
+    particlePositions[i * 3 + 1] = y;
+    particlePositions[i * 3 + 2] = 0;
+    particleTargets[i * 3] = x;
+    particleTargets[i * 3 + 1] = y;
+    particleTargets[i * 3 + 2] = 0;
+    particleColors[i * 3] = 0.42 + Math.random() * 0.3;
+    particleColors[i * 3 + 1] = 0.39 + Math.random() * 0.3;
+    particleColors[i * 3 + 2] = 1;
+  }
+
+  particlesGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+  particlesGeo.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+
+  const particleMat = new THREE.PointsMaterial({
+    size: 0.03,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0,
+    sizeAttenuation: true
+  });
+
+  const particles = new THREE.Points(particlesGeo, particleMat);
+  scene.add(particles);
+
+  let dispersed = false;
+  let disperseAnim = null;
+
+  wrapper.addEventListener('click', () => {
+    if (dispersed) return;
+    dispersed = true;
+    photoPlane.visible = false;
+    particleMat.opacity = 1;
+
+    // Scatter positions
+    const scattered = new Float32Array(PARTICLE_COUNT * 3);
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      scattered[i * 3] = (Math.random() - 0.5) * 8;
+      scattered[i * 3 + 1] = (Math.random() - 0.5) * 8;
+      scattered[i * 3 + 2] = (Math.random() - 0.5) * 8;
+    }
+
+    // Explode outward
+    const posArr = particlesGeo.attributes.position.array;
+    const startPositions = new Float32Array(posArr);
+    const tempObj = { progress: 0 };
+    gsap.to(tempObj, {
+      progress: 1,
+      duration: 0.8,
+      ease: 'power2.out',
+      onUpdate: () => {
+        const p = tempObj.progress;
+        for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
+          posArr[i] = startPositions[i] + (scattered[i] - startPositions[i]) * p;
+        }
+        particlesGeo.attributes.position.needsUpdate = true;
+      }
+    });
+
+    // Reassemble
+    setTimeout(() => {
+      const currentPos = new Float32Array(posArr);
+      const tempObj2 = { progress: 0 };
+      gsap.to(tempObj2, {
+        progress: 1,
+        duration: 1.5,
+        ease: 'power2.inOut',
+        onUpdate: () => {
+          const p = tempObj2.progress;
+          for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
+            posArr[i] = currentPos[i] + (particleTargets[i] - currentPos[i]) * p;
+          }
+          particlesGeo.attributes.position.needsUpdate = true;
+        },
+        onComplete: () => {
+          photoPlane.visible = true;
+          gsap.to(particleMat, { opacity: 0, duration: 0.4 });
+          dispersed = false;
+        }
+      });
+    }, 900);
+  });
+
+  // Hover tracking
+  let hoverVal = 0;
+  wrapper.addEventListener('mouseenter', () => {
+    gsap.to(uniforms.uHover, { value: 1, duration: 0.4 });
+  });
+  wrapper.addEventListener('mouseleave', () => {
+    gsap.to(uniforms.uHover, { value: 0, duration: 0.6 });
+  });
+
+  function resize() {
+    const w = wrapper.clientWidth;
+    const h = wrapper.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let time = 0;
+  const loop = () => {
+    time += 0.016;
+    uniforms.uTime.value = time;
+
+    // Rotate rings
+    const hoverMul = 1 + uniforms.uHover.value * 2;
+    rings.forEach((r, i) => {
+      r.mesh.rotation.y += 0.01 * r.speed * hoverMul;
+      r.mesh.rotation.z += 0.005 * r.speed * hoverMul;
+      // Mouse tracking for rings on hover
+      if (uniforms.uHover.value > 0.1) {
+        r.mesh.rotation.x += (THREE.MathUtils.degToRad(r.baseAngle) + mouse.ny * 0.2 - r.mesh.rotation.x) * 0.05;
+      }
+    });
+
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  activeScenes.about = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   EDUCATION — CIRCUIT BOARD Z-TRACK
+   =========================================================== */
+function initEducationDNA() {
+  if (isMobile) return;
+  const canvas = document.getElementById('edu-canvas');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x020612, 0.025);
+  const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 120);
+  camera.position.set(0, 0, 8);
+
+  scene.add(new THREE.AmbientLight(0x001030, 0.5));
+  const cyanLight = new THREE.PointLight(0x00d2ff, 1.5, 30);
+  cyanLight.position.set(3, 3, 5);
+  scene.add(cyanLight);
+  const purpleLight = new THREE.PointLight(0x7b2fff, 1.2, 30);
+  purpleLight.position.set(-3, -2, 5);
+  scene.add(purpleLight);
+
+  const totalNodes = PORTFOLIO.education.length;
+  const zStep = -8;
+  const nodes3D = [];
+
+  // Only decorative 3D objects — no text overlays that clash with HTML
+  PORTFOLIO.education.forEach((edu, i) => {
+    const group = new THREE.Group();
+    // Alternate left-far and right-far so they sit at screen edges
+    const xPos = (i % 2 === 0 ? 4.5 : -4.5);
+    group.position.set(xPos, (i % 3 - 1) * 1.2, i * zStep);
+
+    // Glowing octahedron node
+    const nodeGeo = new THREE.OctahedronGeometry(0.55, 0);
+    const nodeMat = new THREE.MeshPhongMaterial({
+      color: i % 2 === 0 ? 0x00d2ff : 0x7b2fff,
+      emissive: i % 2 === 0 ? 0x00d2ff : 0x7b2fff,
+      emissiveIntensity: 0.5,
+      transparent: true, opacity: 0.85, shininess: 200
+    });
+    const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
+    group.add(nodeMesh);
+
+    // Wire-frame outer shell
+    const wireGeo = new THREE.OctahedronGeometry(0.75, 0);
+    const wireMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0x00d2ff : 0x7b2fff, wireframe: true, transparent: true, opacity: 0.25 });
+    group.add(new THREE.Mesh(wireGeo, wireMat));
+
+    // Glow halo disc
+    const haloGeo = new THREE.RingGeometry(0.7, 1.1, 32);
+    const haloMat = new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0x00d2ff : 0x7b2fff, transparent: true, opacity: 0.1, side: THREE.DoubleSide });
+    const halo = new THREE.Mesh(haloGeo, haloMat);
+    halo.rotation.x = Math.PI / 2;
+    group.add(halo);
+
+    // Connecting line from node toward center spine
+    const linePts = [new THREE.Vector3(0, 0, 0), new THREE.Vector3(-xPos * 0.7, 0, 0)];
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(linePts);
+    group.add(new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: i % 2 === 0 ? 0x00d2ff : 0x7b2fff, transparent: true, opacity: 0.35 })));
+
+    scene.add(group);
+    nodes3D.push({ group, nodeMesh, halo, nodeMat });
+  });
+
+  // Central spine
+  const spinePts = [new THREE.Vector3(0, 0, 4), new THREE.Vector3(0, 0, (totalNodes - 1) * zStep - 4)];
+  scene.add(new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(spinePts),
+    new THREE.LineBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0.15 })
+  ));
+
+  // Floating particles
+  const pGeo = new THREE.BufferGeometry();
+  const pArr = new Float32Array(500 * 3);
+  for (let i = 0; i < 500; i++) {
+    pArr[i * 3] = (Math.random() - 0.5) * 16;
+    pArr[i * 3 + 1] = (Math.random() - 0.5) * 10;
+    pArr[i * 3 + 2] = Math.random() * (totalNodes * zStep);
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+  const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.04, color: 0x00d2ff, transparent: true, opacity: 0.5 }));
+  scene.add(particles);
+
+  // Grid floor
+  const grid = new THREE.GridHelper(30, 30, 0x00d2ff, 0x001a3a);
+  grid.position.y = -2.5;
+  grid.material.transparent = true; grid.material.opacity = 0.12;
+  scene.add(grid);
+
+  function resize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let time = 0;
+  const loop = () => {
+    time += 0.016;
+    nodes3D.forEach((n, i) => {
+      n.nodeMesh.rotation.y += 0.01;
+      n.nodeMesh.rotation.x += 0.007;
+      n.nodeMat.emissiveIntensity = 0.4 + Math.sin(time * 2 + i * 1.5) * 0.3;
+      n.halo.material.opacity = 0.08 + Math.sin(time * 1.5 + i) * 0.06;
+      n.group.position.y += Math.sin(time * 0.8 + i * 1.2) * 0.002;
+    });
+    cyanLight.intensity = 1.3 + Math.sin(time * 2.5) * 0.3;
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  // Scroll: subtle forward drift + slight Y pan
+  const endZ = (totalNodes - 1) * zStep;
+  gsap.to(camera.position, {
+    z: endZ + 6,
+    y: 0.8,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#education',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1.5
+    }
+  });
+
+  activeScenes.education = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   CERTIFICATES — HORIZONTAL SCROLL (GSAP ScrollTrigger)
+   =========================================================== */
+function initCertificatesCarousel() {
+  const panels = document.querySelectorAll('.cert-h-panel');
+  if (!panels.length) return;
+
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#certificates',
+      start: 'top top',
+      end: () => '+=' + (panels.length * window.innerHeight * 1.5),
+      pin: true,
+      scrub: 1,
+      anticipatePin: 1
+    }
+  });
+
+  // Intro: Scale "Certificates" text and fade out the header
+  tl.to('#cert-scale-text', { scale: 12, opacity: 0, duration: 1.5, ease: 'power2.in' });
+  tl.to('#cert-sub, #cert-label', { opacity: 0, duration: 0.5 }, 0);
+
+  panels.forEach((panel, i) => {
+    const visual = panel.querySelector('.cert-h-visual');
+    const details = panel.querySelector('.cert-h-details');
+
+    if (i === 0) {
+      tl.set(panel, { visibility: 'visible' });
+      tl.fromTo(visual, { opacity: 0, scale: 0.8, x: window.innerWidth * 0.15 }, { opacity: 1, scale: 1, x: 0, duration: 1.5, ease: 'power2.out' });
+      tl.fromTo(details, { opacity: 0, x: window.innerWidth * 0.4 }, { opacity: 1, x: 0, duration: 1.5, ease: 'power2.out' }, "<0.3");
+    }
+
+    if (i < panels.length - 1) {
+      const nextPanel = panels[i + 1];
+      const nextVisual = nextPanel.querySelector('.cert-h-visual');
+      const nextDetails = nextPanel.querySelector('.cert-h-details');
+
+      // Start transition overlapping
+      tl.addLabel(`transition-${i}`, "+=1");
+
+      // Current leaves to left
+      tl.to(visual, { opacity: 0, x: -window.innerWidth * 0.6, duration: 1.5, ease: 'power2.inOut' }, `transition-${i}`);
+      tl.to(details, { opacity: 0, x: -window.innerWidth * 0.4, duration: 1.5, ease: 'power2.inOut' }, `<0.1`);
+      tl.set(panel, { visibility: 'hidden' });
+
+      // Next enters from right
+      tl.set(nextPanel, { visibility: 'visible' }, `transition-${i}`);
+      tl.fromTo(nextVisual, { opacity: 0, x: window.innerWidth * 0.6 }, { opacity: 1, x: 0, duration: 1.5, ease: 'power2.inOut' }, `transition-${i}`);
+      tl.fromTo(nextDetails, { opacity: 0, x: window.innerWidth * 0.8 }, { opacity: 1, x: 0, duration: 1.5, ease: 'power2.out' }, `<0.2`);
+    }
+  });
+}
+
+/* ===========================================================
+   HACKATHONS — NEON PODIUM FLY-THROUGH
+   =========================================================== */
+function initHackathonTrophies() {
+  if (isMobile) return;
+  const canvas = document.getElementById('hack-canvas');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x060816, 0.045);
+  const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 60);
+
+  scene.add(new THREE.AmbientLight(0x001020, 0.6));
+  const mainLight = new THREE.PointLight(0x00d2ff, 2, 25);
+  scene.add(mainLight);
+  const warmLight = new THREE.PointLight(0xff6b35, 1, 15);
+  scene.add(warmLight);
+
+  const trophyColors = { gold: 0xf59e0b, silver: 0xb0c4d8, bronze: 0xcd7f32 };
+  const trophyGlows  = { gold: 0xf59e0b, silver: 0x94b8d0, bronze: 0xe87d20 };
+
+  // Camera fly path — tighter curve for shorter section
+  const curvePts = [
+    new THREE.Vector3( 0,  0,  6),
+    new THREE.Vector3( 2,  0.5,  2),
+    new THREE.Vector3(-2, -0.3, -2),
+    new THREE.Vector3( 1.5, 0.5, -6),
+    new THREE.Vector3( 0,   0, -10)
+  ];
+  const curve = new THREE.CatmullRomCurve3(curvePts);
+
+  const totalTrophies = PORTFOLIO.hackathons.length;
+
+  PORTFOLIO.hackathons.forEach((h, i) => {
+    const color = trophyColors[h.placeClass] || 0xf59e0b;
+    const glow  = trophyGlows[h.placeClass]  || 0xf59e0b;
+    const mat = new THREE.MeshPhongMaterial({ color, emissive: color, emissiveIntensity: 0.4, shininess: 140 });
+
+    const group = new THREE.Group();
+
+    // Neon pedestal — scaled down
+    const pedGeo = new THREE.BoxGeometry(0.5, 0.08, 0.5);
+    const pedMat = new THREE.MeshPhongMaterial({ color: 0x001530, emissive: glow, emissiveIntensity: 0.4 });
+    group.add(new THREE.Mesh(pedGeo, pedMat));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(pedGeo), new THREE.LineBasicMaterial({ color: glow })));
+
+    // Trophy cup body (lathe) — smaller scale
+    const lathePoints = [
+      new THREE.Vector2(0.03, 0), new THREE.Vector2(0.04, 0.07),
+      new THREE.Vector2(0.04, 0.14), new THREE.Vector2(0.09, 0.26),
+      new THREE.Vector2(0.15, 0.38), new THREE.Vector2(0.13, 0.46),
+      new THREE.Vector2(0.09, 0.50), new THREE.Vector2(0.04, 0.54),
+      new THREE.Vector2(0.035, 0.58)
+    ];
+    const cup = new THREE.Mesh(new THREE.LatheGeometry(lathePoints, 20), mat);
+    cup.position.y = 0.1;
+    group.add(cup);
+
+    // Star topper
+    const starMesh = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.07, 0),
+      new THREE.MeshPhongMaterial({ color: glow, emissive: glow, emissiveIntensity: 0.9 })
+    );
+    starMesh.position.y = 0.72;
+    group.add(starMesh);
+
+    // Halo
+    const halo = new THREE.Mesh(
+      new THREE.RingGeometry(0.22, 0.34, 32),
+      new THREE.MeshBasicMaterial({ color: glow, transparent: true, opacity: 0.18, side: THREE.DoubleSide })
+    );
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.y = 0.04;
+    group.add(halo);
+
+    // Place trophies on the RIGHT side of the screen (x > 0) so they don't block the card grid
+    const t = 0.1 + (i / Math.max(1, totalTrophies - 1)) * 0.8;
+    const pos = curve.getPointAt(t);
+    const tangent = curve.getTangentAt(t);
+    // Force to right side with a strong positive X offset
+    const sideOffset = new THREE.Vector3(tangent.z, 0, -tangent.x).normalize().multiplyScalar(2.8);
+    group.position.copy(pos).add(sideOffset);
+    group.position.x = Math.abs(group.position.x) + 1.5; // Always right side
+    group.position.y -= 0.5;
+
+    scene.add(group);
+
+    const tLight = new THREE.PointLight(glow, 1.2, 3);
+    tLight.position.copy(group.position).add(new THREE.Vector3(0, 0.9, 0));
+    scene.add(tLight);
+  });
+
+  // Floating binary particles
+  const pGeo = new THREE.BufferGeometry();
+  const pCount = 300;
+  const pArr = new Float32Array(pCount * 3);
+  for (let i = 0; i < pCount; i++) {
+    pArr[i*3]   = (Math.random()-0.5) * 12;
+    pArr[i*3+1] = (Math.random()-0.5) * 6;
+    pArr[i*3+2] = (Math.random()-0.5) * 18;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pArr, 3));
+  const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({ size: 0.04, color: 0x00d2ff, transparent: true, opacity: 0.5 }));
+  scene.add(particles);
+
+  // Ground grid
+  const gridHelper = new THREE.GridHelper(20, 20, 0x00d2ff, 0x001a3a);
+  gridHelper.position.y = -0.7;
+  gridHelper.material.transparent = true;
+  gridHelper.material.opacity = 0.25;
+  scene.add(gridHelper);
+
+  function resize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let time = 0;
+  const loop = () => {
+    time += 0.016;
+    particles.rotation.y = time * 0.04;
+    mainLight.intensity = 1.8 + Math.sin(time * 2) * 0.4;
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  // Scroll: camera rides the curve
+  ScrollTrigger.create({
+    trigger: '#hackathons',
+    start: 'top top',
+    end: 'bottom bottom',
+    scrub: 1.2,
+    onUpdate: (self) => {
+      const t = Math.min(0.999, self.progress);
+      const pos = curve.getPointAt(t);
+      camera.position.copy(pos);
+      mainLight.position.copy(pos);
+      warmLight.position.copy(pos).add(new THREE.Vector3(1, -1, 0));
+      const lookT = Math.min(0.999, t + 0.06);
+      camera.lookAt(curve.getPointAt(lookT));
+    }
+  });
+
+  activeScenes.hackathons = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   SKILLS — ORBITAL SKILL PLANETS
+   =========================================================== */
+function initSkillsPlanets() {
+  if (isMobile) return;
+  const canvas = document.getElementById('skills-canvas');
+  const wrapper = document.getElementById('skills-canvas-wrapper');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
+  camera.position.z = 6;
+
+  const ambLight = new THREE.AmbientLight(0x333355, 0.4);
+  scene.add(ambLight);
+
+  // Central sun
+  const sunGeo = new THREE.SphereGeometry(0.35, 32, 32);
+  const sunMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
+  const sun = new THREE.Mesh(sunGeo, sunMat);
+  scene.add(sun);
+
+  // Sun glow
+  const sunGlow = new THREE.PointLight(0xf59e0b, 1.5, 15);
+  scene.add(sunGlow);
+
+  // Orbiting planets
+  const planets = [];
+  const tooltip = document.getElementById('skill-tooltip');
+
+  PORTFOLIO.skills.forEach((skill, i) => {
+    const radius = 1.2 + i * 0.4;
+    const size = 0.08 + (skill.level / 100) * 0.15;
+    const color = new THREE.Color(skill.color);
+
+    const planetGeo = new THREE.SphereGeometry(size, 16, 16);
+    const planetMat = new THREE.MeshPhongMaterial({
+      color,
+      emissive: color,
+      emissiveIntensity: 0.3,
+      shininess: 60
+    });
+    const planet = new THREE.Mesh(planetGeo, planetMat);
+
+    // Orbit ring
+    const orbitGeo = new THREE.TorusGeometry(radius, 0.005, 4, 64);
+    const orbitMat = new THREE.MeshBasicMaterial({ color: 0x333355, transparent: true, opacity: 0.3 });
+    const orbit = new THREE.Mesh(orbitGeo, orbitMat);
+    orbit.rotation.x = Math.PI / 2;
+    scene.add(orbit);
+
+    const speed = 0.3 + Math.random() * 0.5;
+    const startAngle = Math.random() * Math.PI * 2;
+
+    scene.add(planet);
+    planets.push({ mesh: planet, radius, speed, angle: startAngle, skill, paused: false, orbit });
+  });
+
+  // Raycasting
+  const raycaster = new THREE.Raycaster();
+  const mouseVec = new THREE.Vector2();
+  let hoveredPlanet = -1;
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mouseVec.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouseVec.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    // Tooltip positioning
+    if (hoveredPlanet >= 0) {
+      tooltip.style.left = (e.clientX - wrapper.getBoundingClientRect().left + 15) + 'px';
+      tooltip.style.top = (e.clientY - wrapper.getBoundingClientRect().top - 10) + 'px';
+    }
+  });
+
+  function resize() {
+    const w = wrapper.clientWidth;
+    const h = wrapper.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let time = 0;
+  const loop = () => {
+    time += 0.016;
+
+    // Sun pulse
+    const pulse = 1 + Math.sin(time * 3) * 0.05;
+    sun.scale.set(pulse, pulse, pulse);
+
+    // Raycasting
+    raycaster.setFromCamera(mouseVec, camera);
+    const meshes = planets.map(p => p.mesh);
+    const intersects = raycaster.intersectObjects(meshes);
+    const newHovered = intersects.length > 0 ? planets.findIndex(p => p.mesh === intersects[0].object) : -1;
+
+    if (newHovered !== hoveredPlanet) {
+      hoveredPlanet = newHovered;
+      if (hoveredPlanet >= 0) {
+        const p = planets[hoveredPlanet];
+        p.paused = true;
+        tooltip.innerHTML = `<strong>${p.skill.name}</strong><br>${p.skill.level}%`;
+        tooltip.style.opacity = '1';
+      } else {
+        planets.forEach(p => p.paused = false);
+        tooltip.style.opacity = '0';
+      }
+    }
+
+    // Orbit planets
+    planets.forEach(p => {
+      if (!p.paused) p.angle += p.speed * 0.016;
+      p.mesh.position.x = Math.cos(p.angle) * p.radius;
+      p.mesh.position.z = Math.sin(p.angle) * p.radius;
+      p.mesh.position.y = Math.sin(p.angle * 2) * 0.1;
+    });
+
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  activeScenes.skills = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   CONTACT — WORMHOLE PORTAL
+   =========================================================== */
+function initContactWormhole() {
+  if (isMobile) return;
+  const canvas = document.getElementById('contact-canvas');
+  const section = document.getElementById('contact');
+  const renderer = createRenderer(canvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
+  camera.position.z = 30;
+
+  // Create concentric rings
+  const RING_COUNT = 40;
+  const rings = [];
+
+  for (let i = 0; i < RING_COUNT; i++) {
+    const radius = 3 + i * 0.15;
+    const ringGeo = new THREE.TorusGeometry(radius, 0.03, 8, 64);
+    const hue = 170 + (i / RING_COUNT) * 30;
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color().setHSL(hue / 360, 0.7, 0.5),
+      transparent: true,
+      opacity: 0.6 - (i / RING_COUNT) * 0.4
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.z = -i * 2;
+    ring.rotation.z = (i * 0.1);
+    scene.add(ring);
+    rings.push(ring);
+  }
+
+  // Speed multiplier for typing
+  let wormholeSpeed = 1;
+  const formInputs = section.querySelectorAll('input, textarea');
+  formInputs.forEach(input => {
+    input.addEventListener('input', () => { wormholeSpeed = 3; });
+    input.addEventListener('blur', () => { wormholeSpeed = 1; });
+  });
+
+  function resize() {
+    const w = section.clientWidth;
+    const h = section.clientHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let time = 0;
+  const loop = () => {
+    time += 0.016 * wormholeSpeed;
+
+    // Camera dolly
+    camera.position.z = 30 + Math.sin(time * 0.3) * 5;
+
+    rings.forEach((ring, i) => {
+      ring.rotation.z += 0.002 * (1 + i * 0.05) * wormholeSpeed;
+      ring.position.z = -i * 2 + (time * 2 * wormholeSpeed) % (RING_COUNT * 2);
+      if (ring.position.z > 10) ring.position.z -= RING_COUNT * 2;
+
+      const scale = 1 + Math.sin(time + i * 0.2) * 0.1;
+      ring.scale.set(scale, scale, 1);
+    });
+
+    // Slow speed decay back to 1
+    wormholeSpeed += (1 - wormholeSpeed) * 0.02;
+
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  activeScenes.contact = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   PROJECTS — 3D FLOATING SCREEN MOCKUP (Featured)
+   =========================================================== */
+function initProjectScreen() {
+  if (isMobile) return;
+  const projectCards = document.querySelectorAll('.project-card');
+  if (projectCards.length === 0) return;
+
+  // Only do 3D screen for first project card
+  const firstCard = projectCards[0];
+  const imgContainer = firstCard.querySelector('.project-img');
+  if (!imgContainer) return;
+
+  const pcCanvas = document.createElement('canvas');
+  pcCanvas.className = 'desktop-only-canvas';
+  pcCanvas.style.width = '100%';
+  pcCanvas.style.height = '100%';
+  imgContainer.innerHTML = '';
+  imgContainer.appendChild(pcCanvas);
+
+  const renderer = createRenderer(pcCanvas);
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 50);
+  camera.position.z = 3.5;
+
+  const ambLight = new THREE.AmbientLight(0x444466, 0.6);
+  scene.add(ambLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+  dirLight.position.set(2, 2, 4);
+  scene.add(dirLight);
+
+  const monitorGroup = new THREE.Group();
+
+  // Screen frame
+  const frameMat = new THREE.MeshPhongMaterial({ color: 0x1a1a2e, shininess: 60 });
+
+  // Back panel
+  const backGeo = new THREE.BoxGeometry(2.2, 1.5, 0.08);
+  const backMesh = new THREE.Mesh(backGeo, frameMat);
+  monitorGroup.add(backMesh);
+
+  // Screen face
+  const screenGeo = new THREE.PlaneGeometry(2, 1.3);
+  const screenCanvas = document.createElement('canvas');
+  screenCanvas.width = 512;
+  screenCanvas.height = 320;
+  const sCtx = screenCanvas.getContext('2d');
+  const sGrad = sCtx.createLinearGradient(0, 0, 512, 320);
+  sGrad.addColorStop(0, PORTFOLIO.projects[0].color);
+  sGrad.addColorStop(1, '#1a1a3e');
+  sCtx.fillStyle = sGrad;
+  sCtx.fillRect(0, 0, 512, 320);
+  sCtx.fillStyle = '#fff';
+  sCtx.font = 'bold 28px sans-serif';
+  sCtx.textAlign = 'center';
+  sCtx.fillText(PORTFOLIO.projects[0].title, 256, 160);
+  sCtx.font = '16px sans-serif';
+  sCtx.fillStyle = 'rgba(255,255,255,0.7)';
+  sCtx.fillText('Click to view project', 256, 200);
+
+  const screenTex = new THREE.CanvasTexture(screenCanvas);
+  const screenMat = new THREE.MeshBasicMaterial({ map: screenTex });
+  const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+  screenMesh.position.z = 0.05;
+  monitorGroup.add(screenMesh);
+
+  // Stand
+  const standGeo = new THREE.BoxGeometry(0.15, 0.6, 0.1);
+  const standMesh = new THREE.Mesh(standGeo, frameMat);
+  standMesh.position.y = -1.05;
+  monitorGroup.add(standMesh);
+
+  // Base
+  const baseGeo = new THREE.BoxGeometry(0.8, 0.06, 0.4);
+  const baseMesh = new THREE.Mesh(baseGeo, frameMat);
+  baseMesh.position.y = -1.35;
+  monitorGroup.add(baseMesh);
+
+  monitorGroup.position.y = 0.3;
+  scene.add(monitorGroup);
+
+  // Click handler
+  pcCanvas.style.cursor = 'pointer';
+  pcCanvas.addEventListener('click', () => {
+    if (PORTFOLIO.projects[0].link && PORTFOLIO.projects[0].link !== '#') {
+      window.open(PORTFOLIO.projects[0].link, '_blank');
+    }
+  });
+
+  function resize() {
+    const w = imgContainer.clientWidth;
+    const h = imgContainer.clientHeight;
+    if (w && h) {
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  let time = 0;
+  const loop = () => {
+    time += 0.016;
+    monitorGroup.position.y = 0.3 + Math.sin(time * 1.5) * 0.05;
+    monitorGroup.rotation.y = Math.sin(time * 0.8) * 0.1 + mouse.nx * 0.15;
+    monitorGroup.rotation.x = mouse.ny * 0.08;
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+
+  activeScenes.projectScreen = { renderer, scene, camera, loop };
+}
+
+/* ===========================================================
+   CONFETTI ON CONTACT FORM SUBMIT
+   =========================================================== */
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  canvas.style.display = 'block';
+  const renderer = createRenderer(canvas, { alpha: true });
+  if (!renderer) return;
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.z = 10;
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  const pieces = [];
+  const colors = [0x6c63ff, 0x2dd4bf, 0xf59e0b, 0xec4899, 0x22d3ee, 0xf97316, 0xa78bfa];
+  const confettiGeo = new THREE.PlaneGeometry(0.15, 0.15);
+
+  for (let i = 0; i < 150; i++) {
+    const mat = new THREE.MeshBasicMaterial({
+      color: colors[Math.floor(Math.random() * colors.length)],
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 1
+    });
+    const piece = new THREE.Mesh(confettiGeo, mat);
+    piece.position.set(
+      (Math.random() - 0.5) * 5,
+      -2 + Math.random() * 2,
+      Math.random() * 5
+    );
+    piece.velocity = new THREE.Vector3(
+      (Math.random() - 0.5) * 0.3,
+      0.2 + Math.random() * 0.4,
+      (Math.random() - 0.5) * 0.2
+    );
+    piece.rotSpeed = new THREE.Vector3(
+      Math.random() * 0.2,
+      Math.random() * 0.2,
+      Math.random() * 0.2
+    );
+    scene.add(piece);
+    pieces.push(piece);
+  }
+
+  // Paper plane
+  const planeGeo = new THREE.ConeGeometry(0.2, 0.6, 3);
+  const planeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+  const paperPlane = new THREE.Mesh(planeGeo, planeMat);
+  paperPlane.position.set(-8, 0, 0);
+  paperPlane.rotation.z = -Math.PI / 2;
+  scene.add(paperPlane);
+
+  gsap.to(paperPlane.position, { x: 12, y: 4, duration: 2, ease: 'power1.inOut' });
+  gsap.to(paperPlane.rotation, { z: -Math.PI / 2 + 0.3, y: Math.PI * 2, duration: 2 });
+
+  let elapsed = 0;
+  const loop = () => {
+    elapsed += 0.016;
+    if (elapsed > 3) {
+      renderer.setAnimationLoop(null);
+      canvas.style.display = 'none';
+      renderer.dispose();
+      return;
+    }
+
+    pieces.forEach(p => {
+      p.velocity.y -= 0.008; // gravity
+      p.position.add(p.velocity);
+      p.rotation.x += p.rotSpeed.x;
+      p.rotation.y += p.rotSpeed.y;
+      p.rotation.z += p.rotSpeed.z;
+      if (elapsed > 2) p.material.opacity -= 0.02;
+    });
+
+    renderer.render(scene, camera);
+  };
+  renderer.setAnimationLoop(loop);
+}
+
+document.getElementById('contact-form').addEventListener('submit', e => {
+  e.preventDefault();
+  launchConfetti();
+  // Reset form
+  setTimeout(() => {
+    e.target.reset();
+  }, 500);
+});
+
+/* ===========================================================
+   PAGE LOAD CINEMATIC
+   =========================================================== */
+function playCinematic(onComplete) {
+  const loader = document.getElementById('loader');
+  const loaderText = document.getElementById('loader-text');
+  const name = PORTFOLIO.name;
+
+  // Create letter spans
+  name.split('').forEach(char => {
+    const span = document.createElement('span');
+    span.className = 'letter';
+    span.textContent = char === ' ' ? '\u00A0' : char;
+    loaderText.appendChild(span);
+  });
+
+  const letters = loaderText.querySelectorAll('.letter');
+  const scanLine = loader.querySelector('.scan-line');
+  const curtainL = loader.querySelector('.curtain-left');
+  const curtainR = loader.querySelector('.curtain-right');
+
+  const tl = gsap.timeline({
+    onComplete: () => {
+      loader.style.display = 'none';
+      if (onComplete) onComplete();
+    }
+  });
+
+  // Letters fall in
+  tl.to(letters, {
+    opacity: 1,
+    y: 0,
+    duration: 0.6,
+    stagger: 0.08,
+    ease: 'bounce.out'
+  });
+
+  // Scan line sweep
+  tl.to(scanLine, {
+    opacity: 1,
+    top: '100%',
+    duration: 0.6,
+    ease: 'none'
+  }, '-=0.2');
+
+  // Curtains split
+  tl.to(curtainL, {
+    x: '-100%',
+    duration: 0.6,
+    ease: 'power2.inOut'
+  }, '+=0.2');
+  tl.to(curtainR, {
+    x: '100%',
+    duration: 0.6,
+    ease: 'power2.inOut'
+  }, '<');
+
+  // Fade out remaining
+  tl.to(loaderText, {
+    opacity: 0,
+    duration: 0.3
+  }, '-=0.4');
+}
+
+/* ===========================================================
+   HERO CONTENT ENTRANCE ANIMATION
+   =========================================================== */
+function animateHeroContent() {
+  const tl = gsap.timeline({ delay: 0.2 });
+  tl.to('.hero-greeting', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' });
+  tl.to('.hero-name', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3');
+  tl.to('.hero-tagline', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3');
+  tl.to('.hero-cta', { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.3');
+}
+
+/* ===========================================================
+   INTERSECTION OBSERVER FOR CANVAS LIFECYCLE
+   =========================================================== */
+function initCanvasLifecycle() {
+  // For performance, we pause animation loops when out of view
+  const canvasMap = {
+    'hero': document.getElementById('hero'),
+    'about': document.getElementById('about'),
+    'education': document.getElementById('education'),
+    'certificates': document.getElementById('certificates'),
+    'hackathons': document.getElementById('hackathons'),
+    'skills': document.getElementById('skills'),
+    'contact': document.getElementById('contact'),
+    'projects': document.getElementById('projects')
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = entry.target.id;
+      const sceneKeys = id === 'projects' ? ['projectScreen'] : [id];
+      
+      sceneKeys.forEach(key => {
+        const scene = activeScenes[key];
+        if (scene && scene.renderer && scene.loop) {
+          if (entry.isIntersecting) {
+            scene.renderer.setAnimationLoop(scene.loop);
+          } else {
+            scene.renderer.setAnimationLoop(null);
+          }
+        }
+      });
+    });
+  }, { threshold: 0.05 });
+
+  Object.values(canvasMap).forEach(el => {
+    if (el) observer.observe(el);
+  });
+}
+
+/* ===========================================================
+   INITIALIZE EVERYTHING
+   =========================================================== */
+function init() {
+  populateContent();
+  initCursorTrail();
+  updateCursorTrail();
+  updateCursorRing();
+  initTechBackground(); // Start animated circuit background immediately
+
+  playCinematic(() => {
+    animateHeroContent();
+    initMagneticButtons();
+    initTiltCards();
+    initScrollAnimations();
+    initStarfield();
+    initHeroShapeMorph();
+    initAboutSection();
+    initEducationDNA();
+    initCertificatesCarousel();
+    initHackathonTrophies();
+    initProjectScreen();
+    initSkillsPlanets();
+    initContactWormhole();
+    initCanvasLifecycle();
+  });
+}
+
+// Wait for DOM + scripts
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
